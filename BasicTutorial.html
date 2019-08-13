@@ -3,7 +3,7 @@
 <head>
 
 <script type="text/javascript">
-    <!Globals>
+    //Globals
     var ctx = null;
     var gameMap = [
 	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -18,13 +18,77 @@
     	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
     
-    <!Tile Size>
+    //Tile Size
     var tileW = 40, tileH = 40;
     var mapW = 10, mapH = 10;
     
-    <!Map Size>
+    //Map Size>
     var currentSecond = 0, frameCount = 0, framesLastSecond = 0;
+	
+	// create a function to be run when the page is done loading.
+	//this function will assign our drawing context for the Canvas to the ctx variable, and in this case set the Canvas font
+	window.onload = function()
+	{
+		ctx = document.getElementById('game').getContext("2d");
+		requestAnimationFrame(drawGame);
+		ctx.font = "bold 10pt sans-serif";
+	};
+	
+	//Our main function will do several things: 
+	//	we'll use it to count the number of frame (frame rate) per second; 
+	//	it will draw the map itself; 
+	//	the frame rate will be drawn, and finally we'll request that the function be called again when the browser is ready.
 
+    //We'll open the function, and do a basic check to see our Canvas drawing context exists. 
+	//If it doesn't, we exit out of the function and give up:
+	function drawGame()
+	{
+		if(ctx==null) { return; }
+		
+		// Next we do a simple frame count
+		//We see which second it currently is in Unix Time, and if it's the same one as it was last frame 
+		//	we add to the frame count. If not, we set the framesLastSecond to the current frame count, 
+		//	reset the frame count to 0, and update the current second:
+		var sec = Math.floor(Date.now()/1000);
+		if(sec!=currentSecond)
+		{
+			currentSecond = sec;
+			framesLastSecond = frameCount;
+			frameCount = 1;
+		}
+		else { frameCount++; }
+		
+		// Next, drawing loops
+		for(var y = 0; y < mapH; ++y)
+		{
+			for(var x = 0; x < mapW; ++x)
+			{
+				//Draw the tiles
+				switch(gameMap[((y*mapW)+x)])
+				{
+					case 0:
+						ctx.fillStyle = "#000000";
+						break;
+					default:
+						ctx.fillStyle = "#ccffcc";
+				}
+	
+				ctx.fillRect( x*tileW, y*tileH, tileW, tileH);
+				
+				//Then, we close our loops
+				
+			}
+		}
+		
+		//Finally, let's show the number of frames drawn last second with red text (#ff0000), 
+		//	and tell the browser to run this function again when it's ready to draw another frame on the Canvas, 
+		//	and close the function.
+		ctx.fillStyle = "#ff0000";
+		ctx.fillText("FPS: " + framesLastSecond, 10, 20);
+	
+		requestAnimationFrame(drawGame);
+	}
+	
 </script>
 
 </head>
