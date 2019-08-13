@@ -3,6 +3,27 @@
 <head>
 
 <script type="text/javascript">
+    <!Globals>
+    var ctx = null;
+    var gameMap = [
+	    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    	0, 1, 1, 1, 0, 1, 1, 1, 1, 0,
+    	0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+    	0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    	0, 1, 0, 1, 0, 0, 0, 1, 1, 0,
+    	0, 1, 0, 1, 0, 1, 0, 0, 1, 0,
+    	0, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+    	0, 1, 0, 0, 0, 0, 0, 1, 0, 0,
+    	0, 1, 1, 1, 0, 1, 1, 1, 1, 0,
+    	0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];
+    
+    <!Tile Size>
+    var tileW = 40, tileH = 40;
+    var mapW = 10, mapH = 10;
+    
+    <!Map Size>
+    var currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 
 </script>
 
