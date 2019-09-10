@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title></title>
+	<script type="text/javascript">
+
+	window.onload = function() {
+		// Prototype Entity
+		var particle = {
+			xPos: null,
+			yPos: null,
+			xVel: null,
+			yVel: null,
+
+			create: function(x, y) {
+				var obj = Object.create(this);
+				obj.xPos = x;
+				obj.yPos = y;
+				obj.xVel = 0;
+				obj.yVel = 0;
+				return obj;
+			},
+
+			render: function(ctx) {
+				ctx.fillStyle = "rgba(0, 0, 0)";
+				ctx.fillRect(this.xPos, this.yPos, 5, 10);
+			},
+
+		};
+
+		// Globals
+		var canvas = document.getElementById('canvas'),
+		context = canvas.getContext('2d'),
+		width = canvas.width = window.innerWidth,
+		height = canvas.height = window.innerHeight;
+
+		var centerY = height * .5,
+		centerX = width * .5;
+
+		var actor = particle.create(50,50);
+
+		// Event Listeners
+		document.body.addEventListener("keydown", function(event) {
+			console.log(event.keyCode + " key down");
+			//up	38
+			//down	40
+			//left	37
+			//right	39
+			// space 32
+			//enter 13
+			//A	65
+			//S	83
+			//D	68
+			//Q	81
+			//W	87
+			//E	104
+			switch(event.keyCode){
+				case 32: // space
+					// code
+				break;
+				default:
+					break;
+			}
+		}); 
+
+		document.body.addEventListener("keyup", function(event) {
+			console.log(event.keyCode + " key up");
+			switch(event.keyCode){
+				case 32: // space
+					// code
+				break;
+				default:
+					break;
+			}
+		});	
+
+
+		//End Event Listener
+
+		render();
+
+		function render() {
+			var alpha = baseAlpha + Math.sin(angle) * offset;
+
+			context.fillStyle = "rgba(0, 0, 0)";
+
+			context.clearRect(0, 0, width, height);
+			
+			requestAnimationFrame(render);
+		}
+	};
+
+	</script>
+	<style type="text/css">
+	html, body {
+		margin: 0px;
+	}
+	canvas {
+		display: block;
+	}
+	</style>
+</head>
+<body>
+<canvas id="canvas">Empty Canvas</canvas>
+</body>
+</html>
