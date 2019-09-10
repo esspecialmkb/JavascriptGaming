@@ -26,6 +26,11 @@
 				ctx.fillStyle = "rgba(0, 0, 0)";
 				ctx.fillRect(this.xPos, this.yPos, 5, 10);
 			},
+			
+			move: function(x, y) {
+				this.xPos += x;
+				this.yPos += y;
+			},
 
 		};
 
@@ -86,6 +91,8 @@
 			context.fillStyle = "rgba(0, 0, 0)";
 
 			context.clearRect(0, 0, width, height);
+			
+			actor.render(context);
 			
 			requestAnimationFrame(render);
 		}
