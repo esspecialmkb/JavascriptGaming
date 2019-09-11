@@ -1,114 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="utf-8"/>
-	<title></title>
-	<script type="text/javascript">
-
-	window.onload = function() {
-		// Prototype Entity
-		var particle = {
-			xPos: null,
-			yPos: null,
-			xVel: null,
-			yVel: null,
-
-			create: function(x, y) {
-				var obj = Object.create(this);
-				obj.xPos = x;
-				obj.yPos = y;
-				obj.xVel = 0;
-				obj.yVel = 0;
-				return obj;
-			},
-
-			render: function(ctx) {
-				ctx.fillStyle = "rgba(0, 0, 0)";
-				ctx.fillRect(this.xPos, this.yPos, 5, 10);
-			},
-			
-			move: function(x, y) {
-				this.xPos += x;
-				this.yPos += y;
-			},
-
-		};
-
-		// Globals
-		var canvas = document.getElementById('canvas'),
-		context = canvas.getContext('2d'),
-		width = canvas.width = window.innerWidth,
-		height = canvas.height = window.innerHeight;
-
-		var centerY = height * .5,
-		centerX = width * .5;
-
-		var actor = particle.create(50,50);
-
-		// Event Listeners
-		document.body.addEventListener("keydown", function(event) {
-			console.log(event.keyCode + " key down");
-			//up	38
-			//down	40
-			//left	37
-			//right	39
-			// space 32
-			//enter 13
-			//A	65
-			//S	83
-			//D	68
-			//Q	81
-			//W	87
-			//E	104
-			switch(event.keyCode){
-				case 32: // space
-					// code
-				break;
-				default:
-					break;
-			}
-		}); 
-
-		document.body.addEventListener("keyup", function(event) {
-			console.log(event.keyCode + " key up");
-			switch(event.keyCode){
-				case 32: // space
-					// code
-				break;
-				default:
-					break;
-			}
-		});	
-
-
-		//End Event Listener
-
-		render();
-
-		function render() {
-			var alpha = baseAlpha + Math.sin(angle) * offset;
-
-			context.fillStyle = "rgba(0, 0, 0)";
-
-			context.clearRect(0, 0, width, height);
-			
-			actor.render(context);
-			
-			requestAnimationFrame(render);
-		}
-	};
-
-	</script>
-	<style type="text/css">
-	html, body {
-		margin: 0px;
-	}
-	canvas {
-		display: block;
-	}
-	</style>
+    <meta charset="utf-8" />
+    <title>JavaScript Dev Template</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
 </head>
 <body>
-<canvas id="canvas">Empty Canvas</canvas>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+	// JavaScript code goes here
+	var canvas = document.body.getElementByID("myCanvas");
+	var ctx = canvas.getContext("2d");
+	
+	// "#FF0000"; fill style for red
+	// "green";
+	// "rgba(0, 0, 255, 0.5)"; blue with alpha
+	
+	// Create an empty array for the drawing list
+	var drawObjectList = [];
+	
+	var rectObject = {
+		x: null,
+		y: null,
+		w: null,
+		h: null,
+		fillStyle: null,
+		
+		create: function(x, y, w, h, fillStyle) {
+			var obj = Object.create(this);
+			obj.x = x;
+			obj.y = y;
+			obj.w = w;
+			obj.h = h;
+			obj.fillStyle = fillStyle;
+			
+			return obj;
+		},
+		
+		render: function() {
+			//Draw red square
+			ctx.beginPath();
+			ctx.rect(this.x, this.y, this.w, this.h);
+			ctx.fillStyle = this.fillStyle;
+			ctx.fill();
+			ctx.closePath();
+		}
+	};
+	
+	var arcObject = {
+		x: null,
+		y: null,
+		radius: null,
+		aStart: null,
+		aEnd: null,
+		fillStyle: null,
+		
+		create: function(x, y, radius, aStart, aEnd, fillStyle) {
+			var obj = Object.create(this);
+			obj.x = x;
+			obj.y = y;
+			obj.radius = radius;
+			obj.aStart = aStart;
+			obj.aEnd = aEnd;
+			obj.fillStyle = fillStyle;
+			
+			return obj;
+		},
+		
+		render: function() {
+			//Draw red square
+			ctx.beginPath();
+			ctx.arc(240, 160, 20, 0, Math.PI*2, false);
+			ctx.fillStyle = this.fillStyle;
+			ctx.fill();
+			ctx.closePath();
+		}
+	};
+	
+	// Draw all objects in drawObjects array
+	function drawList(){
+		for(var o in drawObjectList) {
+			o.render();
+		}
+	}
+	
+	// Drawing function
+	function draw() {
+	    	// drawing code
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		
+		// Call the drawList() function
+		drawList();
+		
+	}
+	var drawInterval = setInterval(draw, 50); // Call draw() every 50 millisecs
+	//clearInterval(drawInterval); 	clear the interval calls
+	
+
+	//up	38
+	//down	40
+	//left	37
+	//right	39
+	//space 32
+	//enter 13
+	//A	65
+	//S	83
+	//D	68
+	//Q	81
+	//W	87
+	//E	104
+	function onKeyUp(event) {
+		console.log( event.keyCode + "Key Up");
+	}
+	function onKeyDown(event) {
+		console.log( event.keyCode + "Key Down");
+	}
+	
+	
+</script>
+
 </body>
 </html>
