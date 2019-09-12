@@ -97,7 +97,10 @@
 		var centerY = height * .5,
 		centerX = width * .5;
 		
+		// Creating prototype objects
 		var actor = particle.create(50,50);
+		drawObjectList.push( actor );
+		
 		var rect = rectObject.create(100,100,50,50, "rgba(0,0,0,1)");
 		drawObjectList.push( rect );
 		
@@ -143,8 +146,10 @@
 		render();
 
 		function renderList() {
-			for(var d in drawObjectList) {
-				d.render();
+			for(var d = 0; d < drawObjectList.length; d += 1) {
+				// Need to access each item in the drawList
+				dObj = drawObjectList[d];
+				dObj.render();
 			}
 		}
 
@@ -153,8 +158,8 @@
 			//ctx.fillStyle = "rgba(0, 0, 0)";
 			ctx.clearRect(0, 0, width, height);
 
-			actor.render();
-			rect.render();
+			//actor.render();
+			//rect.render();
 		
 			renderList();
 			
