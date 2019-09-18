@@ -64,11 +64,12 @@ Character.prototype.processMovement = function(t) {
 
 		// When moving left, the pos needs to be greater than maxX
 		// When moving right, the pos needs to be less than min
-		if(this.mX > 0){ // Moving to the right...
-			if(this.x > minX){
-			 this.x = minX;
+		if(this.mX > 0){ // Moving to the right... Correct!
+			if((this.x + this.sX) > minX){
+			 this.x = minX - (this.sX);
 			}
-		}if(this.mX < 0){ // Moving to the left Correct
+		}
+		if(this.mX < 0){ // Moving to the left Correct
 			if(this.x < maxX){
 			 this.x = maxX;
 			}
@@ -77,10 +78,11 @@ Character.prototype.processMovement = function(t) {
 		// When moving up, the pos needs to be greater than maxY
 		// When moving down, the pos needs to be less than minY
 		if(this.mY > 0){ // Moving downwards
-			if(this.y > minY){
-			 this.y = minY;
+			if((this.y+this.sY) > minY){
+			 this.y = minY - (this.sY);
 			}
-		}if(this.mY < 0){ // Moving upwards Correct
+		}
+		if(this.mY < 0){ // Moving upwards Correct
 			if(this.y < maxY){
 			 this.y = maxY;
 			}
