@@ -1,13 +1,14 @@
 var gameMap = [
-	0,0,0,0,0,0,0,0,0,
-	0,0,0,0,1,0,0,0,0,
-	0,0,0,1,1,1,0,0,0,
-	0,0,1,1,1,1,1,0,0,
-	0,1,1,1,1,1,1,1,0,
-	0,0,1,1,1,1,1,0,0,
-	0,0,0,1,1,1,0,0,0,
-	0,0,0,0,1,0,0,0,0,
-	0,0,0,0,0,0,0,0,0
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,1,1,0,0,0,0,
+	0,0,0,1,1,1,1,0,0,0,
+	0,0,1,1,1,1,1,1,0,0,
+	0,1,1,1,1,1,1,1,1,0,
+	0,0,1,1,1,1,1,1,0,0,
+	0,0,0,1,1,1,1,0,0,0,
+	0,0,0,0,1,1,1,1,1,0,
+	0,0,0,0,0,1,1,1,1,0,
+	0,0,0,0,0,0,0,0,0,0
 ];
 
 getMapTile = function(x, y) {
@@ -15,7 +16,7 @@ getMapTile = function(x, y) {
 };
 
 var tileH = 40, tileW = 40;
-var mapH = 9, mapW = 9;
+var mapH = 10, mapW = 10;
 
 var currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 var currentFrameTime = 0;
@@ -96,8 +97,6 @@ var drawGame = function() {
 	drawMap();
 	
 	drawPlayer();
-
-	//console.log( timeElapsed );
 	
 	//Let's show the number of frames drawn last second with red text (#ff0000), 
 	//	and tell the browser to run this function again when it's ready to draw another frame on the Canvas, 
@@ -106,7 +105,7 @@ var drawGame = function() {
 	ctx.fillText("FPS: " + framesLastSecond, 10, 20);
 
 	ctx.fillText("TilePos: [ " + player.tileFromX + ", " + player.tileFromY + " ]", 10, 340);
-	ctx.fillText("TileDest: [ "
+	ctx.fillText("TileDest: [ " + player.tileToX + ", " + player.tileToY + " ]", 300, 340);
 	
 	lastFrameTime = currentFrameTime;
 	requestAnimationFrame(drawGame); 
@@ -118,7 +117,7 @@ var drawMap = function() {
 	{
 		for(var x = 0; x < mapW; ++x)
 		{
-			//Draw the tiles
+			// Select the fillStyle for the tile
 			switch(gameMap[ ((y*mapW) +x) ])
 			{
 				case 0:
@@ -127,11 +126,10 @@ var drawMap = function() {
 				default:
 					ctx.fillStyle = "#ccffcc";
 			}
-	
+			// Draw the tile
 			ctx.fillRect( x*tileW, y*tileH, tileW, tileH);
 			
 			//Then, we close our loops
-			
 		}
 	}
 };
@@ -141,6 +139,7 @@ var drawPlayer = function() {
 	var left = 0;
 	var up = 0;
 	
+	// Parse player input
 	if( keyCodes.k37 == true){
 		//Left
 		player.mX = tileW * -0.05;
@@ -165,10 +164,12 @@ var drawPlayer = function() {
 	// Get the player's tile coordinates
 	player.tileFromX = Math.floor((player.x + (player.sX/2)) / tileW);
 	player.tileFromY = Math.floor((player.y + (player.sY/2)) / tileH);
-
+	
+	// Calculate the player's intended direction
 	player.tileToX = player.tileFromX + left;
 	player.tileToY = player.tileFromY + up;
 
+	// Process movement and check for tile collisions
 	player.processMovement(timeElapsed);
 
 	// Draw the player
