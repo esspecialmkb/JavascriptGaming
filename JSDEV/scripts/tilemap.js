@@ -11,12 +11,80 @@ var gameMap = [
 	0,0,0,0,0,0,0,0,0,0
 ];
 
+var gameMap2 = [
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0,
+	0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0,
+	0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0,
+	0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0,
+	0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+	0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0,
+	0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+	0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+	0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0,
+	0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+	0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0,
+	0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+];
+
+var useMap = 2;
+
+// Helper function to get map array index from 2d coordinates
 getMapTile = function(x, y) {
-	return gameMap[((y*mapW) +x)];
+	if(useMap == 2){
+		return gameMap2[((y*mapW) +x)];
+	}else{	
+		return gameMap[((y*mapW) +x)];
+	}
 };
 
 var tileH = 40, tileW = 40;
+
 var mapH = 10, mapW = 10;
+
+if(useMap ==2){
+	mapH = 20;
+	mapW = 20;
+}
+
+var viewport = {
+	screenX		: 0,
+	screenY		: 0,
+	startTileX 	: 0,
+	startTileY 	: 0,
+	endTileX 	: 0,
+	endTileY 	: 0,
+	offsetX 		: 0,
+	offsetY 		: 0, 
+
+	update		: function( px, py ) {
+		this.offsetX = Math.floor((this.screenX/2) - px);
+		this.offsetY = Math.floor((this.screenY/2) - py);
+
+		var tileX = Math.floor(px/tileW);
+		var tileY = Math.floor(py/tileH);
+
+		this.startTileX = tileX - 1 - Math.ceil((this.screenX/2) / tileW);
+		this.startTileY = tileY - 1 - Math.ceil((this.screenY/2) / tileH);
+
+		if(this.startTileX < 0) { this.startTileX = 0; }
+		if(this.startTileY < 0) { this.startTileY = 0; }
+
+		this.endTileX = tileX + 1 + Math.ceil((this.screenX/2) / tileW);
+		this.endTileY = tileY + 1 + Math.ceil((this.screenY/2) / tileH);
+
+		if(this.endTileX >= mapW) { this.endTileX = mapW; }
+		if(this.endTileY >= mapH) { this.endTileY = mapH; }
+	}
+};
+
 
 var currentSecond = 0, frameCount = 0, framesLastSecond = 0;
 var currentFrameTime = 0;
@@ -37,6 +105,8 @@ window.onload = function()
 	currentFrameTime = Date.now();
 	
 	canvas = document.getElementById('canvas');
+	viewport.screenX = canvas.width;
+	viewport.screenY = canvas.height;
 	console.log(canvas.width );
 	console.log(canvas.height) ;
 	
@@ -94,18 +164,20 @@ var drawGame = function() {
 	else { frameCount++; }
 
 	ctx.clearRect(0,0, canvas.width, canvas.height);
+
+	ctx.fillStyle = "#000000";
+	ctx.fillRect(0, 0, viewport.screenX, viewport.screenY);
+
+	viewport.update(player.x + (player.sX/2), player.y + (player.sY/2));
 	drawMap();
 	
-	drawPlayer();
+	drawPlayer();		
 	
 	//Let's show the number of frames drawn last second with red text (#ff0000), 
 	//	and tell the browser to run this function again when it's ready to draw another frame on the Canvas, 
 	//	and close the function.
 	ctx.fillStyle = "#ff0000";
 	ctx.fillText("FPS: " + framesLastSecond, 10, 20);
-
-	ctx.fillText("TilePos: [ " + player.tileFromX + ", " + player.tileFromY + " ]", 10, 340);
-	ctx.fillText("TileDest: [ " + player.tileToX + ", " + player.tileToY + " ]", 300, 340);
 	
 	lastFrameTime = currentFrameTime;
 	requestAnimationFrame(drawGame); 
@@ -113,12 +185,13 @@ var drawGame = function() {
 
 var drawMap = function() {
 	// Next, drawing loops
-	for(var y = 0; y < mapH; ++y)
+	for(var y = viewport.startTileY; y <= viewport.endTileY; ++y)
 	{
-		for(var x = 0; x < mapW; ++x)
+		for(var x = viewport.startTileX; x < viewport.endTileX; ++x)
 		{
 			// Select the fillStyle for the tile
-			switch(gameMap[ ((y*mapW) +x) ])
+			// *Needs to be changed to work with different map sizes
+			switch(gameMap2[ ((y*mapW) +x) ])
 			{
 				case 0:
 					ctx.fillStyle = "#000000";
@@ -126,8 +199,9 @@ var drawMap = function() {
 				default:
 					ctx.fillStyle = "#ccffcc";
 			}
-			// Draw the tile
-			ctx.fillRect( x*tileW, y*tileH, tileW, tileH);
+			// Draw the tile with the offset
+			ctx.fillRect( viewport.offsetX + (x*tileW), viewport.offsetY + (y*tileH),
+				tileW, tileH);
 			
 			//Then, we close our loops
 		}
@@ -174,6 +248,6 @@ var drawPlayer = function() {
 
 	// Draw the player
 	ctx.fillStyle = "#0000ff";
-	ctx.fillRect(player.x, player.y, player.sX, player.sY);
+	ctx.fillRect(player.x + viewport.offsetX, player.y + viewport.offsetY, player.sX, player.sY);
 	
 };
