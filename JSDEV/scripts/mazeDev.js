@@ -211,7 +211,7 @@ genRoom = function(min, max) {
 	}else if(passing == 0) {
 		// var newRegion = region.create( pX, pY, rX, rY, newRegionId(), 1, "green" );
 		var newRegion = new Region();
-		newRegion.init( pX, pY, rY, rY, newRegionId(), 1, "green");
+		newRegion.init( pX, pY, rX, rY, newRegionId(), 1, "green");
 		regionList.push( newRegion );
 
 		for(var iX = 0; iX < rX; ++iX) {
