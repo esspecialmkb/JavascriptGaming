@@ -4,8 +4,8 @@
 function Player(x, y) {
     this.x = x;
     this.y = y;
-    this.width = 20;
-    this.height = 20;
+    this.width = 15;
+    this.height = 30;
     this.direction = 0;
 
     // Movement flags
@@ -15,7 +15,7 @@ function Player(x, y) {
     this.movingRight = false;
 
     // Movement data
-    this.moveSpeed = 1;
+    this.moveSpeed = renderer.tileSize() * 0.05;
     this.directionX = 0;
     this.directionY = 0;
     this.tileX = 0;
@@ -35,9 +35,7 @@ Player.prototype.update = function () {
     this.tileToX = this.tileX + this.directionX;
     this.tileToY = this.tileY + this.directionY;
 
-    //console.log("Player.update() " + this.tileX + ", " + this.tileY);
-    //this.x += this.directionX;
-    //this.y += this.directionY;
+    // * Since we need to check for collisions, we'll leave the rest to the physics object
 };
 
 Player.prototype.updateDirection = function() {
@@ -94,10 +92,25 @@ function Enemy(x, y) {
     this.height = 10;
     this.direction = 1;
 
+    // Movement flags
+    this.movingUp = false;
+    this.movingDown = false;
+    this.movingLeft = false;
+    this.movingRight = false;
+
     // * Movement data
-    this.moveSpeed = 3;
+    this.moveSpeed = renderer.tileSize() * 0.03;
     this.directionX = 0;
     this.directionY = 0;
+    this.tileX = 0;
+    this.tileY = 0;
+    this.tileToX = 0;
+    this.tileToY = 0;
+
+    // * AI data
+    this.targetX = 0;
+    this.targetY = 0;
+    this.state = 0;
 }
 
 Enemy.prototype.update = function () {
@@ -186,14 +199,16 @@ var renderer = (function () {
 
     function _drawPlayer(context, player) {
         context.fillStyle = "blue";
-	_updateViewport( player.x, player.y );
-
+	_updateViewport( player.x + (player.width/2), player.y + (player.height/2) );
+	
+	// Draw the player
         context.fillRect(_offsetX + player.x, _offsetY + player.y, player.width, player.height);
 
-	context.fillStyle = "red";
-	context.fillRect(_offsetX + player.x - 2, _offsetY + player.y - 2, 4, 4);
+	// Debug drawing for player tile position
+	//context.fillStyle = "red";
+	//context.fillRect(_offsetX + player.x - 2, _offsetY + player.y - 2, 4, 4);
 
-	context.fillRect( _offsetX + ( player.tileToX * _tileW ), _offsetY + ( player.tileToY * _tileH), _tileW, _tileH);
+	//context.fillRect( _offsetX + ( player.tileToX * _tileW ), _offsetY + ( player.tileToY * _tileH), _tileW, _tileH);
 	
 	// We are also going to need to know if the player is using a melee attack
     }
@@ -249,53 +264,40 @@ var physics = (function () {
             // Process Physics Updates
 	    //console.log("Entity update :" + i);
 
-	    
+	    entities[i].x += (entities[i].directionX * entities[i].moveSpeed);
+	    entities[i].y += (entities[i].directionY * entities[i].moveSpeed);
 
-	    if( game.getMapTile( entities[i].tileToX, entities[i].tileToY ) == 0) {
-		// Get the boundaries of the tile
-//context.fillRect(_offsetX + player.x, _offsetY + player.y, player.width, player.height);
+	    entities[i].x = Math.floor( entities[i].x );
+	    entities[i].y = Math.floor( entities[i].y );
 
-	    	var minX = entities[i].tileToX * renderer.tileSize();
-	    	var maxX = minX + renderer.tileSize();
-	    	var minY = entities[i].tileToY * renderer.tileSize();
-	    	var maxY = minY + renderer.tileSize();
+	    if( game.getMapTile( entities[i].tileToX, entities[i].tileToY ) == 0 ){
+		// Get tile boundaries
+		var minX = entities[i].tileToX * renderer.tileSize();
+		var maxX = minX + renderer.tileSize();
+		var minY = entities[i].tileToY * renderer.tileSize();
+		var maxY = minY + renderer.tileSize();
 
-		// directionX is greater than 0 when moving to the right
-		if( entities[i].directionX > 0 ) {
-		    if( ( entities[i].x + entities[i].width + entities[i].directionX ) > minX ) {
+		if( entities[i].directionX > 0){
+		    if( ( entities[i].x + entities[i].width ) > minX ){
 			entities[i].x = minX - entities[i].width;
 		    }
 		}
-		
-		// directionX is less than 0 when moving to the left
-		if( entities[i].directionX < 0 ) {
-		    if( ( entities[i].x + entities[i].directionX ) < maxX ) {
+		if( entities[i].directionX < 0){
+		    if( ( entities[i].x ) < maxX ){
 			entities[i].x = maxX;
-		    }			
+		    }
 		}
-		
-		// directionY is greater than 0 when moving downwards
-		if( entities[i].directionY > 0 ) {
-		    if( ( entities[i].y + entities[i].height + entities[i].directionY ) > minY) {
+		if( entities[i].directionY > 0){
+		    if( ( entities[i].y + entities[i].height ) > minY ){
 			entities[i].y = minY - entities[i].height;
 		    }
 		}
-
-		// directionY is less than 0 when moving upwards
-		if( entities[i].directionY < 0 ) {
-		    if( ( entities[i].y + entities[i].directionY ) < maxY ) {
+		if( entities[i].directionY < 0){
+		    if( ( entities[i].y ) < maxY ){
 			entities[i].y = maxY;
 		    }
 		}
-	    }else{
-		entities[i].x += entities[i].directionX * entities[i].moveSpeed;
-		entities[i].y += entities[i].directionY * entities[i].moveSpeed;
-	    }
-	    //entities[i].x += Math.floor(xClip);
-	    //entities[i].y += Math.floor(yClip);
-
-	    //entities[i].x += entities[i].directionX * entities[i].moveSpeed// * (deltaTime / 10);
-	    //entities[i].y += entities[i].directionY * entities[i].moveSpeed// * (deltaTime / 10);
+	    }	    
         }
     }
 
@@ -350,12 +352,15 @@ var game = (function () {
         //_entities.push(new Enemy(160, 25));
 
 	this.addEntity( new Player(200, 200) );
+	
+	_currentTime = Date.now();
 
         window.requestAnimationFrame(this.update.bind(this));
     }
 
     function _update( time ) {
-	_currentTime = time;
+	_lastTime = _currentTime;
+	_currentTime = Date.now();
 	_deltaTime = _currentTime - _lastTime;
 
 	//console.log("Time : " + time + ", Delta : " + _deltaTime);
@@ -394,7 +399,8 @@ var game = (function () {
 	mapWidth: function () { return _mapW; },
 	mapHeight: function () { return _mapH; },
 	player: function () { return _player; },
-	addEntity : _addEntity
+	addEntity : _addEntity,
+	deltaTime : _deltaTime
     };
 
 })();
@@ -480,3 +486,75 @@ function keyUp(e) {
 
 window.addEventListener('keydown' , keyDown );
 window.addEventListener('keyup' , keyUp );
+
+//
+// Touch
+//
+function getRelativeTouchCoords(touch) {
+    function getOffsetLeft( elem ) {
+        var offsetLeft = 0;
+        do {
+            if( !isNaN( elem.offsetLeft ) ) {
+                offsetLeft += elem.offsetLeft;
+            }
+        }
+        while( elem = elem.offsetParent );
+        return offsetLeft;
+    }
+
+    function getOffsetTop( elem ) {
+        var offsetTop = 0;
+        do {
+            if( !isNaN( elem.offsetTop ) ) {
+                offsetTop += elem.offsetTop;
+            }
+        }
+        while( elem = elem.offsetParent );
+        return offsetTop;
+    }
+
+    var scale = game.gameFieldRect().width / canvas.clientWidth;
+    var x = touch.pageX - getOffsetLeft(canvas);
+    var y = touch.pageY - getOffsetTop(canvas);
+
+    return { x: x*scale,
+             y: y*scale };
+}
+
+function touchStart(e) {
+    var touches = e.changedTouches,
+        touchLocation,
+        playerAction;
+
+    e.preventDefault();
+
+    for( var i=touches.length-1; i>=0; i-- ) {
+        touchLocation = getRelativeTouchCoords(touches[i]);
+
+        if( touchLocation.x < game.gameFieldRect().width*(1/5) ) {
+            playerAction = "moveLeft";
+        }
+        else if( touchLocation.x < game.gameFieldRect().width*(4/5) ) {
+            playerAction = "fire";
+        }
+        else {
+            playerAction = "moveRight";
+        }
+
+        playerActions.startAction(touches[i].identifier, playerAction);
+    }
+}
+
+function touchEnd(e) {
+    var touches = e.changedTouches;
+    e.preventDefault();
+
+    for( var i=touches.length-1; i>=0; i-- ) {
+        playerActions.endAction(touches[i].identifier);
+    }
+}
+
+var canvas = document.getElementById("game-layer");
+canvas.addEventListener("touchstart", touchStart);
+canvas.addEventListener("touchend", touchEnd);
+canvas.addEventListener("touchcancel", touchEnd);
