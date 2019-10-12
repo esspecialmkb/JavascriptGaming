@@ -6,7 +6,7 @@ function Player(x, y) {
     this.y = y;
     this.width = 15;
     this.height = 30;
-    this.direction = 0;
+    this.direction = 0;		// [North, East, South, West] - (Up:1, Right:2, Down:4, Left:8)
 
     // Movement flags
     this.movingUp = false;
@@ -22,6 +22,12 @@ function Player(x, y) {
     this.tileY = 0;
     this.tileToX = 0;
     this.tileToY = 0;
+
+    // Attack data
+    this.timeAttack = 0;
+    this.timeAttackLast = 0;
+    this.attackCooldown = 100;
+    this.isAttacking = false;
 }
 
 Player.prototype.update = function () {
@@ -36,23 +42,37 @@ Player.prototype.update = function () {
     this.tileToY = this.tileY + this.directionY;
 
     // * Since we need to check for collisions, we'll leave the rest to the physics object
+
+    // Check attack status
+    if( this.isAttacking === true ) {
+	// increment attack time
+	this.timeAttack = Date.now() - this.timeAttackLast;
+	if( this.timeAttack > this.attackCooldown ) {
+	    this.isAttacking = false;
+	}
+    }
 };
 
 Player.prototype.updateDirection = function() {
     var x = 0;
     var y = 0;
+    this.direction = 0;
 
     if( this.movingUp ) {
 	y -= 1;
+	this.direction += 1;
     }
     if( this.movingDown ) {
 	y += 1;
+	this.direction += 4;
     }
     if( this.movingLeft ) {
 	x -= 1;
+	this.direction += 2;
     }
     if( this.movingRight ) {
 	x += 1;
+	this.direction += 8;
     }
     
     this.directionX = x;
@@ -82,6 +102,13 @@ Player.prototype.moveRight = function(enable) {
 
 Player.prototype.attack = function() {
     // Attack function
+    var tNow = Date.now();
+    if(this.isAttacking === false) {
+	// Start the attack
+	this.timeAttackLast = tNow;
+	this.timeAttack = 0;
+	this.isAttacking = true;
+    }
 };
 
 // --- Enemy Object
@@ -120,6 +147,7 @@ Enemy.prototype.update = function () {
 // --- Renderer Object
 // Renderer will host the viewport object
 var renderer = (function () {
+    
 
     // Members for viewport object
     var _screenX = 0;
@@ -203,14 +231,22 @@ var renderer = (function () {
 	
 	// Draw the player
         context.fillRect(_offsetX + player.x, _offsetY + player.y, player.width, player.height);
-
-	// Debug drawing for player tile position
-	//context.fillStyle = "red";
-	//context.fillRect(_offsetX + player.x - 2, _offsetY + player.y - 2, 4, 4);
-
-	//context.fillRect( _offsetX + ( player.tileToX * _tileW ), _offsetY + ( player.tileToY * _tileH), _tileW, _tileH);
 	
 	// We are also going to need to know if the player is using a melee attack
+	// 360 deg = 2 * Math.PI
+	// deg / 180 * Math.PI;
+	if(player.isAttacking === true) {
+	    context.fillStyle = "red";
+	    context.strokeStyle = "black";
+	    context.beginPath();
+	    
+	    var startArc = 0;
+	    var endArc = 2 * Math.PI;
+	    context.arc( _offsetX + player.x + (player.width/2) , _offsetY + player.y + (player.height/2) , player.height , startArc , endArc );
+	    context.fill();
+	    context.stroke();
+	}	
+	
     }
 
     function _render() {
@@ -255,6 +291,43 @@ var renderer = (function () {
 
 // --- Physics Object
 var physics = (function () {
+    function _playerUpdate() {
+	// Update player movement
+	entities[i].x += (entities[i].directionX * entities[i].moveSpeed);
+	entities[i].y += (entities[i].directionY * entities[i].moveSpeed);
+
+	entities[i].x = Math.floor( entities[i].x );
+	entities[i].y = Math.floor( entities[i].y );
+
+        if( game.getMapTile( entities[i].tileToX, entities[i].tileToY ) == 0 ){
+	    // Get tile boundaries
+	    var minX = entities[i].tileToX * renderer.tileSize();
+	    var maxX = minX + renderer.tileSize();
+	    var minY = entities[i].tileToY * renderer.tileSize();
+	    var maxY = minY + renderer.tileSize();
+
+            if( entities[i].directionX > 0){
+		if( ( entities[i].x + entities[i].width ) > minX ){
+		    entities[i].x = minX - entities[i].width;
+		}
+	    }
+	    if( entities[i].directionX < 0){
+		if( ( entities[i].x ) < maxX ){
+		    entities[i].x = maxX;
+		}
+	    }
+	    if( entities[i].directionY > 0){
+		if( ( entities[i].y + entities[i].height ) > minY ){
+		    entities[i].y = minY - entities[i].height;
+		}
+	    }
+	    if( entities[i].directionY < 0){
+		if( ( entities[i].y ) < maxY ){
+		    entities[i].y = maxY;
+		}
+	    }
+	}
+    }
 
     function _update( deltaTime ) {
         var i,
@@ -264,40 +337,13 @@ var physics = (function () {
             // Process Physics Updates
 	    //console.log("Entity update :" + i);
 
-	    entities[i].x += (entities[i].directionX * entities[i].moveSpeed);
-	    entities[i].y += (entities[i].directionY * entities[i].moveSpeed);
-
-	    entities[i].x = Math.floor( entities[i].x );
-	    entities[i].y = Math.floor( entities[i].y );
-
-	    if( game.getMapTile( entities[i].tileToX, entities[i].tileToY ) == 0 ){
-		// Get tile boundaries
-		var minX = entities[i].tileToX * renderer.tileSize();
-		var maxX = minX + renderer.tileSize();
-		var minY = entities[i].tileToY * renderer.tileSize();
-		var maxY = minY + renderer.tileSize();
-
-		if( entities[i].directionX > 0){
-		    if( ( entities[i].x + entities[i].width ) > minX ){
-			entities[i].x = minX - entities[i].width;
-		    }
-		}
-		if( entities[i].directionX < 0){
-		    if( ( entities[i].x ) < maxX ){
-			entities[i].x = maxX;
-		    }
-		}
-		if( entities[i].directionY > 0){
-		    if( ( entities[i].y + entities[i].height ) > minY ){
-			entities[i].y = minY - entities[i].height;
-		    }
-		}
-		if( entities[i].directionY < 0){
-		    if( ( entities[i].y ) < maxY ){
-			entities[i].y = maxY;
-		    }
-		}
-	    }	    
+	    if( entities[i] instanceof Player ) {
+		// The player entities has a different update process
+		_playerUpdate( entities[i] );
+	    }else{
+		// Non-player entities
+	    }
+	    	    
         }
     }
 
@@ -333,9 +379,11 @@ var game = (function () {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
 
+    // Map dimensions
     var _mapH = 20;
     var _mapW = 20;
 
+    // Global game data
     var _gameFieldHeight = 400;
     var _entities = [];
     var _player = null;
@@ -383,11 +431,20 @@ var game = (function () {
     }
 
     function _addEntity( entity ) {
+	_placeEntityAt( entity, entity.x, entity.y );
 	_entities.push( entity );
 
 	if( entity instanceof Player ) {
 	    _player = entity;
 	}
+    }
+
+    function _placeEntityAt( entity, x, y ) {
+	entity.tileX = Math.floor( x / renderer.tileSize() );
+	entity.tileY = Math.floor( y / renderer.tileSize() );
+
+	entity.x = (entity.tileX * renderer.tileSize()) - (entity.width/2);
+	entity.y = (entity.tileY * renderer.tileSize()) - (entity.height/2);
     }
 
     return {
