@@ -81,6 +81,10 @@ var game = (function () {
 	if( entity instanceof Player ) {
 	    _player = entity;
 	}
+
+	if( entity instanceof Enemy ) {
+	    // Setup FSM for enemy
+	}
     }
 
     function _placeEntityAt( entity, x, y ) {
