@@ -142,6 +142,40 @@ function Enemy(x, y) {
 
 Enemy.prototype.update = function () {
     // Enemy update function
+
+    // Enemies will need to be able to perform a few different actions/states
+    // When a new enemy is added to the world, it starts in the spawn state with position
+    // Depending on configuration, the enemy will either goto either the Idle or Patrol states
+
+    switch(this.state) {
+	case 0:
+	    // Death:0, The enemy's health is gone
+	    break;
+	case 1:
+	    // Spawn:1, When the enemy first appears
+	    break;
+	case 2:
+	    // Idle:2, Stand still in a specific location
+	    // The enemy will stay in this state until the player is spotted
+	    // When the player is spotted (gets within aggro range), switch to Alert state
+	    break;
+	case 3:
+	    // Patrol:3, Walk between a set of points
+	    // The enemy will stay in this state until the player is spotted
+	    // When the player is spotted (gets within aggro range), switch to Alert state
+	    break;
+	case 4:
+	    // Alert:4, Something has caught the enemy's attention
+	    break;
+	case 5:
+	    // Pursue:5, Chase the target
+	    break;
+	case 6:
+	    // Attack:6, Attack the target
+	    break;
+	default:
+    
+    }  
 };
 
 // --- Renderer Object
