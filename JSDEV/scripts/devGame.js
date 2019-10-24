@@ -77,8 +77,23 @@ Player.prototype.updateDirection = function() {
     
     this.directionX = x;
     this.directionY = y;
-    //console.log("Player.updateDirection() " + x + ", " + y);
 };
+
+Player.prototype.canMoveTo = function(x, y) {
+    // Make sure x and y are within map bounds
+    if( x < 0 || x >= game.mapWidth() || y < 0 || y >= game.mapHeight()) { return false; }
+    
+    // Check the map array to make sure the target tile is a path type
+    if(tileTypes[ game.getMapTile(x, y) ].floor != floorTypes.path) { return  false; }
+
+    // If both of the tests fail, let the code calling this method know we can move here
+    return true;
+};
+
+Player.prototype.canMoveUp = function() { return this.canMoveTo( this.tileX, this.tileY - 1); };
+Player.prototype.canMoveDown = function() { return this.canMoveTo( this.tileX, this.tileY + 1); };
+Player.prototype.canMoveLeft = function() { return this.canMoveTo( this.tileX - 1, this.tileY); };
+Player.prototype.canMoveRight = function() { return this.canMoveTo( this.tileX + 1, this.tileY); };
 
 Player.prototype.moveUp = function(enable) {
     this.movingUp = enable
@@ -113,10 +128,11 @@ Player.prototype.attack = function() {
 
 // --- Enemy Object
 function Enemy(x, y) {
+    // Base data
     this.x = x;
     this.y = y;
-    this.width = 10;
-    this.height = 10;
+    this.width = 15;
+    this.height = 30;
     this.direction = 1;
 
     // Movement flags
@@ -137,7 +153,10 @@ function Enemy(x, y) {
     // * AI data
     this.targetX = 0;
     this.targetY = 0;
-    this.state = 0;
+    this.aggroRange = 5;
+    this.state = 1;
+    this.health = 5;
+    this.active = false;
 }
 
 Enemy.prototype.update = function () {
@@ -146,6 +165,11 @@ Enemy.prototype.update = function () {
     // Enemies will need to be able to perform a few different actions/states
     // When a new enemy is added to the world, it starts in the spawn state with position
     // Depending on configuration, the enemy will either goto either the Idle or Patrol states
+
+    // Update Enemy AI
+    var dX = entities[i].x - px;
+    var dY = entities[i].y - py;
+    var distP = Math.sqrt( (dX + dX) + (dY + dY) ) / renderer.tileSize();
 
     switch(this.state) {
 	case 0:
@@ -158,6 +182,15 @@ Enemy.prototype.update = function () {
 	    // Idle:2, Stand still in a specific location
 	    // The enemy will stay in this state until the player is spotted
 	    // When the player is spotted (gets within aggro range), switch to Alert state
+			
+	    // Check distance
+	    if( distP < entities[i].aggroRange ){
+		entities[i].state = 4;
+	    }
+
+	    if( distP > 10){
+		// Remove entity?
+	    }
 	    break;
 	case 3:
 	    // Patrol:3, Walk between a set of points
@@ -173,9 +206,56 @@ Enemy.prototype.update = function () {
 	case 6:
 	    // Attack:6, Attack the target
 	    break;
-	default:
+        default:
     
-    }  
+    }      
+};
+
+Enemy.prototype.updateDirection = function() {
+    // [North, East, South, West] - (Up:1, Right:2, Down:4, Left:8)
+    var x = 0;
+    var y = 0;
+    this.direction = 0;
+
+    if( this.movingUp ) {
+	y -= 1;
+	this.direction += 1;
+    }
+    if( this.movingDown ) {
+	y += 1;
+	this.direction += 4;
+    }
+    if( this.movingLeft ) {
+	x -= 1;
+	this.direction += 2;
+    }
+    if( this.movingRight ) {
+	x += 1;
+	this.direction += 8;
+    }
+    
+    this.directionX = x;
+    this.directionY = y;
+};
+
+Enemy.prototype.moveUp = function(enable) {
+    this.movingUp = enable
+    this.updateDirection();
+};
+
+Enemy.prototype.moveDown = function(enable) {
+    this.movingDown = enable;
+    this.updateDirection();
+};
+
+Enemy.prototype.moveLeft = function(enable) {
+    this.movingLeft = enable;
+    this.updateDirection();
+};
+
+Enemy.prototype.moveRight = function(enable) {
+    this.movingRight = enable;
+    this.updateDirection();
 };
 
 // --- Renderer Object
@@ -256,7 +336,7 @@ var renderer = (function () {
 
     function _drawEnemy(context, enemy) {
         context.fillStyle = "red";
-        context.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        context.fillRect(_offsetX + enemy.x, _offsetY + enemy.y, enemy.width, enemy.height);
     }
 
     function _drawPlayer(context, player) {
@@ -305,7 +385,7 @@ var renderer = (function () {
             entity = entities[i];
 
             if( entity instanceof Enemy ) {
-                //_drawEnemy(context, entity);
+                _drawEnemy(context, entity);
             }
             else if( entity instanceof Player ) {
                 _drawPlayer(context, entity);
@@ -316,7 +396,7 @@ var renderer = (function () {
     return {
         render: _render,
 	tileSize: function () { return _tileH; },
-	updateViewort: _updateViewport,
+	updateViewPort: _updateViewport,
 	getOffsetX: function () { return _offsetX; },
 	getOffsetY: function () { return _offsetY; }
     };
@@ -325,42 +405,48 @@ var renderer = (function () {
 
 // --- Physics Object
 var physics = (function () {
-    function _playerUpdate() {
+    function _playerUpdate( player ) {
 	// Update player movement
-	entities[i].x += (entities[i].directionX * entities[i].moveSpeed);
-	entities[i].y += (entities[i].directionY * entities[i].moveSpeed);
+	player.x += (player.directionX * player.moveSpeed);
+	player.y += (player.directionY * player.moveSpeed);
 
-	entities[i].x = Math.floor( entities[i].x );
-	entities[i].y = Math.floor( entities[i].y );
+	player.x = Math.floor( player.x );
+	player.y = Math.floor( player.y );
 
-        if( game.getMapTile( entities[i].tileToX, entities[i].tileToY ) == 0 ){
+	//var tileFloor = game.getTileType( game.toIndex(player.tileX,y)
+
+        if( game.getMapTile( player.tileToX, player.tileToY ) == 0 ){
 	    // Get tile boundaries
-	    var minX = entities[i].tileToX * renderer.tileSize();
+	    var minX = player.tileToX * renderer.tileSize();
 	    var maxX = minX + renderer.tileSize();
-	    var minY = entities[i].tileToY * renderer.tileSize();
+	    var minY = player.tileToY * renderer.tileSize();
 	    var maxY = minY + renderer.tileSize();
 
-            if( entities[i].directionX > 0){
-		if( ( entities[i].x + entities[i].width ) > minX ){
-		    entities[i].x = minX - entities[i].width;
+            if( player.directionX > 0){
+		if( ( player.x + player.width ) > minX ){
+		    player.x = minX - player.width;
 		}
 	    }
-	    if( entities[i].directionX < 0){
-		if( ( entities[i].x ) < maxX ){
-		    entities[i].x = maxX;
+	    if( player.directionX < 0){
+		if( ( player.x ) < maxX ){
+		    player.x = maxX;
 		}
 	    }
-	    if( entities[i].directionY > 0){
-		if( ( entities[i].y + entities[i].height ) > minY ){
-		    entities[i].y = minY - entities[i].height;
+	    if( player.directionY > 0){
+		if( ( player.y + player.height ) > minY ){
+		    player.y = minY - player.height;
 		}
 	    }
-	    if( entities[i].directionY < 0){
-		if( ( entities[i].y ) < maxY ){
-		    entities[i].y = maxY;
+	    if( player.directionY < 0){
+		if( ( player.y ) < maxY ){
+		    player.y = maxY;
 		}
 	    }
 	}
+    }
+
+    function _enemyUpdate( enemy ) {
+	var attack = Boolean(game.player().isAttacking );
     }
 
     function _update( deltaTime ) {
@@ -376,6 +462,7 @@ var physics = (function () {
 		_playerUpdate( entities[i] );
 	    }else{
 		// Non-player entities
+		_enemyUpdate( entities[i] );
 	    }
 	    	    
         }
@@ -387,10 +474,93 @@ var physics = (function () {
 
 })();
 
+// --------------------------------
+// Mob Control object - fancy term for AIManager
+var mobController = (function () {
+    // Member Data definition
+
+    // Member Method definition
+    function _update() {
+	entities = game.entities();
+	var px = game.player().x;
+	var py = game.player().y;
+	
+	for( var i = 0; i < entities.length; i++) {
+	    if( entities[i] instanceof Enemy) {
+		
+	    }
+	}
+    }
+
+    // Object export block
+    return {
+	update: _update
+
+    };
+})();	// Enclousure
+
+// MAP ENGINE AND TILE OBJECT
+// -----------------------------------
+// Tile object stores information for each tile
+function Tile(tx, ty, tt) {
+    this.x = tx;
+    this.y = ty;
+    this.type = tt;
+    this.roof = null;
+    this.roofType = 0;
+    this.eventEnter = null;	// Can be a function pointer to execute event or null
+}
+
+// ------------------------------------
+// The TileMap is a map handling class
+function TileMap() {
+    this.map = [];
+    this.w = 0;
+    this.h = 0;
+}
+
+// Builds the map from an array (d) and it'd dimensions (w & h)
+TileMap.prototype.buildMapFromData = function( d, w, h) {
+    this.w = w;
+    this.h = h;
+
+    // Make sure that the array length matchs the width and height
+    if( d.length != (w*h) ) { return false;}
+    this.map.length = 0;
+
+    // Populate the data map with tile objects
+    for( var y = 0; y < h; y++) {
+	for( var x = 0; x < w; x++) {
+	    this.map.push( new Tile( x, y, d[ ((y*w) + x)] ) );
+	}
+    }
+
+    return;
+};
+
+TileMap.prototype.addRoofs = function(roofs) {
+    for( var i in roofs) {
+	var r = roofs[i];
+	
+	if( r.x < 0 || r.y < 0 || r.x >= this.w || r.y >= this.h || (r.x + r.w) > this.w || (r.y + r.h) > this.h || r.data.length != (r.w * r.h)) {
+	    continue;
+	}
+
+	for( var y = 0; y < r.h; y++) {
+	    for( var x = 0; x < r.w; x++) {
+		var tileIdx = (( ( r.y + y) * this.w) + r.x + x);
+
+		this.map[ tileIdx ].roof = r;
+		this.map[ tileIdx ].rootType = r.data[ (( y* r.w) + x) ];
+	    }
+	}
+   }
+};
+
 // Game Object
 var game = (function () {
     // Tilemap Array is hosted in the game object
-    var _gameMap = [
+    var _gameMap = [ /*
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0,
 	0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0,
@@ -411,13 +581,78 @@ var game = (function () {
 	0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0,
 	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ];		*/ // New map data below
+        0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 2, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
+	0, 2, 3, 1, 4, 4, 1, 1, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 0,
+	0, 2, 3, 1, 1, 4, 4, 1, 2, 3, 3, 2, 1, 1, 2, 1, 0, 0, 0, 0,
+	0, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0,
+	0, 1, 1, 1, 1, 2, 4, 4, 4, 4, 4, 1, 1, 1, 2, 2, 2, 2, 1, 0,
+	0, 1, 1, 1, 1, 2, 3, 2, 1, 1, 4, 1, 1, 1, 1, 3, 3, 2, 1, 0,
+	0, 1, 2, 2, 2, 2, 1, 2, 1, 1, 4, 1, 1, 1, 1, 1, 3, 2, 1, 0,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 4, 4, 4, 4, 4, 4, 4, 2, 4, 4,
+	0, 1, 2, 3, 3, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 0,
+	0, 1, 2, 3, 4, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 1, 0,
+	0, 3, 2, 3, 4, 4, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 3, 2, 3, 4, 1, 3, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 0,
+	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
+	0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 4, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
+
+    var _floorTypes = {				// Tile type data
+	solid :0,
+	path :1,
+	water :2
+    };
+
+    var _tileTypes = {				// Tile type definition data
+	0 : { color:"black", floor:floorTypes.solid },
+	1 : { color:"green", floor:floorTypes.path },
+	2 : { color:"tan", floor:floorTypes.path },
+	3 : { color:"brown", floor:floorTypes.solid },
+	4 : { color:"blue", floor:floorTypes.water },
+
+	10 : { color:"grey", floor:floorTypes.solid },
+	11 : { color:"grey", floor:floorTypes.solid }
+    };
 
     // Map dimensions
     var _mapH = 20;
     var _mapW = 20;
 
     // Global game data
+    var _mapTileData = new TileMap();		// Map class
+    var _roofList = [				// Roof data
+	{ x:5, y:3, w:4, h:7, data: [
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11
+	]},
+	{ x:15, y:5, w:5, h:4, data: [
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11
+	]},
+	{ x:14, y:9, w:6, h:7, data: [
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11
+	]}
+    ];					
     var _gameFieldHeight = 400;
     var _entities = [];
     var _player = null;
@@ -429,11 +664,12 @@ var game = (function () {
 
     function _start() {
         //_entities.push(new Player(200, 200));
-        //_entities.push(new Enemy(20, 25));
+        
         //_entities.push(new Enemy(80, 25));
         //_entities.push(new Enemy(160, 25));
 
 	this.addEntity( new Player(200, 200) );
+	this.addEntity( new Enemy(250, 25) );
 	
 	_currentTime = Date.now();
 
@@ -454,6 +690,12 @@ var game = (function () {
 	
 	    // Update the viewport with the player's position
 	    if( _entities[1] instanceof Player ) {
+		// Call tileEvent if one exists
+		if( _mapTileData.map[ toIndex( _entities[i].tileToX, _entities[i].tileToY) ].eventEnter != null) {
+		    _mapTileData.map[ toIndex( _entities[i].tileToX, _entities[i].tileToY) ].eventEnter(_entities[i]);
+		}
+
+		// Update viewport in render system
 		renderer.updateViewPort(_entities[i].x + (_entities[i].width/2) , _entities[i].y + (_entities[i].width/2));
 	    }
         }
@@ -465,7 +707,6 @@ var game = (function () {
     }
 
     function _addEntity( entity ) {
-	_placeEntityAt( entity, entity.x, entity.y );
 	_entities.push( entity );
 
 	if( entity instanceof Player ) {
@@ -487,6 +728,7 @@ var game = (function () {
         entities: function () { return _entities; },
         gameFieldHeight: function () { return _gameFieldHeight; },
 	getMapTile: function (x, y) { return _gameMap[ ((y * _mapW) + x)]; },
+	toIndex: function (x, y) { return (( y * _mapW) + x); },
 	mapWidth: function () { return _mapW; },
 	mapHeight: function () { return _mapH; },
 	player: function () { return _player; },
@@ -499,7 +741,7 @@ var game = (function () {
 //*** Using onload="game.start()" within canvas html tag ***//
 //game.start();
 
-//
+// ------------------------------------------
 // Player Actions
 //
 var playerActions = (function () {
@@ -545,7 +787,7 @@ var playerActions = (function () {
 })();
 
 
-//
+// ------------------------------------------
 // Keyboard
 //
 var keybinds = { 32: "attack",
@@ -578,7 +820,7 @@ function keyUp(e) {
 window.addEventListener('keydown' , keyDown );
 window.addEventListener('keyup' , keyUp );
 
-//
+// ------------------------------------------
 // Touch
 //
 function getRelativeTouchCoords(touch) {
