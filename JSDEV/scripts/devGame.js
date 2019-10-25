@@ -159,7 +159,7 @@ function Enemy(x, y) {
     this.active = false;
 }
 
-Enemy.prototype.update = function () {
+Enemy.prototype.update = function (px, py) {
     // Enemy update function
 
     // Enemies will need to be able to perform a few different actions/states
@@ -167,8 +167,8 @@ Enemy.prototype.update = function () {
     // Depending on configuration, the enemy will either goto either the Idle or Patrol states
 
     // Update Enemy AI
-    var dX = entities[i].x - px;
-    var dY = entities[i].y - py;
+    var dX = this.x - px;
+    var dY = this.y - py;
     var distP = Math.sqrt( (dX + dX) + (dY + dY) ) / renderer.tileSize();
 
     switch(this.state) {
@@ -184,8 +184,8 @@ Enemy.prototype.update = function () {
 	    // When the player is spotted (gets within aggro range), switch to Alert state
 			
 	    // Check distance
-	    if( distP < entities[i].aggroRange ){
-		entities[i].state = 4;
+	    if( distP < this.aggroRange ){
+		this.state = 4;
 	    }
 
 	    if( distP > 10){
@@ -387,9 +387,8 @@ var renderer = (function () {
             if( entity instanceof Enemy ) {
                 _drawEnemy(context, entity);
             }
-            else if( entity instanceof Player ) {
-                _drawPlayer(context, entity);
-            }
+            
+            _drawPlayer(context, game.player());
         }
     }
 
@@ -456,14 +455,8 @@ var physics = (function () {
         for( i=0; i<entities.length; i++) {
             // Process Physics Updates
 	    //console.log("Entity update :" + i);
-
-	    if( entities[i] instanceof Player ) {
-		// The player entities has a different update process
-		_playerUpdate( entities[i] );
-	    }else{
-		// Non-player entities
-		_enemyUpdate( entities[i] );
-	    }
+	    _enemyUpdate( entities[i] );
+	    _playerUpdate( game.player() );
 	    	    
         }
     }
@@ -581,7 +574,7 @@ var game = (function () {
 	0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0,
 	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ];		*/ // New map data below
+    ];		*/ 
         0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 2, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
 	0, 2, 3, 4, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 2, 2, 0,
@@ -602,7 +595,7 @@ var game = (function () {
 	0, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 1, 1, 2, 2, 2, 2, 2, 3, 0,
 	0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 4, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ];
+    ]; // New map data
 
     var _floorTypes = {				// Tile type data
 	solid :0,
@@ -611,14 +604,14 @@ var game = (function () {
     };
 
     var _tileTypes = {				// Tile type definition data
-	0 : { color:"black", floor:floorTypes.solid },
-	1 : { color:"green", floor:floorTypes.path },
-	2 : { color:"tan", floor:floorTypes.path },
-	3 : { color:"brown", floor:floorTypes.solid },
-	4 : { color:"blue", floor:floorTypes.water },
+	0 : { color:"black", floor:_floorTypes.solid },
+	1 : { color:"green", floor:_floorTypes.path },
+	2 : { color:"tan", floor:_floorTypes.path },
+	3 : { color:"brown", floor:_floorTypes.solid },
+	4 : { color:"blue", floor:_floorTypes.water },
 
-	10 : { color:"grey", floor:floorTypes.solid },
-	11 : { color:"grey", floor:floorTypes.solid }
+	10 : { color:"grey", floor:_floorTypes.solid },
+	11 : { color:"grey", floor:_floorTypes.solid }
     };
 
     // Map dimensions
@@ -663,7 +656,14 @@ var game = (function () {
     var _deltaTime = null;
 
     function _start() {
-        //_entities.push(new Player(200, 200));
+	var canvas = document.getElementById("game-layer");
+	canvas.addEventListener("touchstart", touchStart);
+	canvas.addEventListener("touchend", touchEnd);
+	canvas.addEventListener("touchcancel", touchEnd);
+
+	_mapTileData.buildMapFromData( _gameMap, 20, 20);
+        
+	//_entities.push(new Player(200, 200));
         
         //_entities.push(new Enemy(80, 25));
         //_entities.push(new Enemy(160, 25));
@@ -686,20 +686,21 @@ var game = (function () {
 
         var i;
         for( i=0; i<_entities.length; i++) {
-            _entities[i].update();
-	
-	    // Update the viewport with the player's position
-	    if( _entities[1] instanceof Player ) {
-		// Call tileEvent if one exists
-		if( _mapTileData.map[ toIndex( _entities[i].tileToX, _entities[i].tileToY) ].eventEnter != null) {
-		    _mapTileData.map[ toIndex( _entities[i].tileToX, _entities[i].tileToY) ].eventEnter(_entities[i]);
-		}
-
-		// Update viewport in render system
-		renderer.updateViewPort(_entities[i].x + (_entities[i].width/2) , _entities[i].y + (_entities[i].width/2));
-	    }
+	    // Update the entities, give the enemies the player's position as well
+            _entities[i].update(_player.x, _player.y);
         }
 
+	// Update the player objecy
+	_player.update();
+	// Call tileEvent if one exists
+	if( _mapTileData.map[ _toIndex( _player.tileToX, _player.tileToY) ].eventEnter != null) {
+	    _mapTileData.map[ _toIndex( _player.tileToX, _player.tileToY) ].eventEnter(_player);
+	}
+
+        // Update viewport in render system
+	renderer.updateViewPort(_player.x + (_player.width/2) , _player.y + (_player.height/2));
+	
+	// Call the render object to draw the screen
         renderer.render();
 
 	_lastTime = _currentTime;
@@ -707,10 +708,14 @@ var game = (function () {
     }
 
     function _addEntity( entity ) {
-	_entities.push( entity );
+	//_entities.push( entity );
 
 	if( entity instanceof Player ) {
+	    // If we are adding a player, update the _player reference
 	    _player = entity;
+	}else{
+	    // Add every other entity into the entity list
+	    _entities.push( entity );
 	}
     }
 
@@ -720,6 +725,10 @@ var game = (function () {
 
 	entity.x = (entity.tileX * renderer.tileSize()) - (entity.width/2);
 	entity.y = (entity.tileY * renderer.tileSize()) - (entity.height/2);
+    }
+
+    function _toIndex( x, y) {
+	return ( ( y*_mapW) + x);
     }
 
     return {
@@ -852,7 +861,7 @@ function getRelativeTouchCoords(touch) {
 
     return { x: x*scale,
              y: y*scale };
-}
+};
 
 function touchStart(e) {
     var touches = e.changedTouches,
@@ -876,7 +885,7 @@ function touchStart(e) {
 
         playerActions.startAction(touches[i].identifier, playerAction);
     }
-}
+};
 
 function touchEnd(e) {
     var touches = e.changedTouches;
@@ -885,9 +894,9 @@ function touchEnd(e) {
     for( var i=touches.length-1; i>=0; i-- ) {
         playerActions.endAction(touches[i].identifier);
     }
-}
+};
 
-var canvas = document.getElementById("game-layer");
-canvas.addEventListener("touchstart", touchStart);
-canvas.addEventListener("touchend", touchEnd);
-canvas.addEventListener("touchcancel", touchEnd);
+//var canvas = document.getElementById("game-layer");
+//canvas.addEventListener("touchstart", touchStart);
+//canvas.addEventListener("touchend", touchEnd);
+//canvas.addEventListener("touchcancel", touchEnd);
