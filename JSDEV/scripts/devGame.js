@@ -310,21 +310,17 @@ var renderer = (function () {
 
     //Map draw method
     function _drawMap(context) {
+			
 	// Next, drawing loops
 	for(var y = _startTileY; y < _endTileY; ++y)
 	{
 	    for(var x = _startTileX; x < _endTileX; ++x)
 	    {
-		// Select the fillStyle for the tile
-		// *Needs to be changed to work with different map sizes
-		switch( game.getMapTile(x, y) )
-		{
-		    case 0:
-			context.fillStyle = "#000000";
-			break;
-		    default:
-			context.fillStyle = "#ccffcc";
-		}
+		// Get tile data for the current tile data
+		var mapData = game.getMapTileData( x, y);
+		// Get the fillStyle from the Tile data
+		var tType = game.getTileType( mapData.type );
+		context.fillStyle = tType.color;
 		// Draw the tile with the offset
 		context.fillRect( _offsetX + (x * _tileW), _offsetY + (y * _tileH), _tileW, _tileH);
 			
@@ -445,7 +441,20 @@ var physics = (function () {
     }
 
     function _enemyUpdate( enemy ) {
+	// Check to see if the player is attacking
 	var attack = Boolean(game.player().isAttacking );
+	if(attack){
+	    
+	    // Check to see if this enemy is in range
+	    var dX = (game.player().x + (game.player.width / 2)) - (enemy.x + (enemy.width / 2));
+	    var dY = (game.player().y + (game.player.height / 2)) - (enemy.y + (enemy.height / 2));
+	    var dist = Math.sqrt( (dX * dX) + (dY * dY));
+
+	    // If the enemy's distance to player is less than the attack range, deal damage
+	    if( dist < game.player().height ){
+		// Deal damage to enemy
+	    }
+	}
     }
 
     function _update( deltaTime ) {
@@ -507,7 +516,7 @@ function Tile(tx, ty, tt) {
 // ------------------------------------
 // The TileMap is a map handling class
 function TileMap() {
-    this.map = [];
+    this.map = []; // Array of TileMap objects
     this.w = 0;
     this.h = 0;
 }
@@ -737,6 +746,8 @@ var game = (function () {
         entities: function () { return _entities; },
         gameFieldHeight: function () { return _gameFieldHeight; },
 	getMapTile: function (x, y) { return _gameMap[ ((y * _mapW) + x)]; },
+	getMapTileData : function (x, y) { return _mapTileData.map[ ((y * _mapW) + x) ]; }, 
+	getTileType : function ( idx ) { return _tileTypes[idx]; },
 	toIndex: function (x, y) { return (( y * _mapW) + x); },
 	mapWidth: function () { return _mapW; },
 	mapHeight: function () { return _mapH; },
