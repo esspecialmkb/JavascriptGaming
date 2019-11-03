@@ -131,8 +131,45 @@ Enemy.prototype.update = function( dt ) {
 }
 
 // ----------------------------------------------------------------
+// Encapsulate viewport into separate object
+var Viewport = function (size) {
+    // Members for viewport object
+    var screenX = 0;
+    var screenY = 0;
+    var startTileX = 0;
+    var startTileY = 0;
+    var endTileX = 0;
+    var endTileY = 0;
+    var offsetX = 0;
+    var offsetY = 0;
+    var tileSize = size;
+}
+
+Viewport.prototype.updateViewport( px, py ) {
+    //console.log("UpdateViewport at " + px + ", " + py);
+    this.offsetX = Math.floor((this.screenX/2) - px); 	// (400/2) - 200 = 200
+    this.offsetY = Math.floor((this.screenY/2) - py); 	// (400/2) - 200 = 200
+
+    var tileX = Math.floor(px/this.tileSize);		// 200/40 = 10
+    var tileY = Math.floor(py/this.tileSize);
+
+    this.startTileX = tileX - 1 - Math.ceil((this.screenX/2) / this.tileSize);	// tileX:5 - 1 - ((400/2) / 40)
+    this.startTileY = tileY - 1 - Math.ceil((this.screenY/2) / this.tileSize);
+
+    if(this.startTileX < 0) { this.startTileX = 0; }
+    if(this.startTileY < 0) { this.startTileY = 0; }
+
+    this.endTileX = tileX + 1 + Math.ceil((this.screenX/2) / this.tileSize);
+    this.endTileY = tileY + 1 + Math.ceil((this.screenY/2) / this.tileSize);
+
+    if(this.endTileX >= map.width() ) { this.endTileX = map.width(); }
+    if(this.endTileY >= map.height()) { this.endTileY = map.height(); }
+}
+
+// ----------------------------------------------------------------
 // The render system takes care of canvas drawing
 var renderer = (function () {
+    var _viewport = new Viewport(20);
     var _entityColors = [ "rgb(150, 7, 7)",
 			  "rgb(150, 89, 7)",
 			  "rgb(56, 150, 7)",
@@ -145,6 +182,22 @@ var renderer = (function () {
 	context.fillRect( entity.x - (entity.w / 2), entity.y - (entity.h / 2), entity.w, entity.h );
     }
 
+    function _drawMap( context ) {
+	for(var y = _viewport.startTileY; y < _viewport.endTileY; ++y)
+	{
+	    for(var x = _viewport.startTileX; x < _viewport.endTileX; ++x)
+	    {
+		// Get the Tile object data for the current tile data
+		var mapTile = map.getTile( x, y);
+		// Get the color for the fillStyle from the Tile data
+		var tType = map.tileTypes( mapTile.type );
+		context.fillStyle = tType.color;
+		// Draw the tile with the offset
+		context.fillRect( _viewport.offsetX + (x * _viewport.tileSize), _viewport.offsetY + (y * _viewport.tileSize), _viewport.tileSize, _viewport.tileSize);
+	    }
+	}
+    }
+
     function _render( canvas ) {
 	var canvas = document.getElementById("canvas-layer");
 	var context = canvas.getContext("2d")
@@ -155,6 +208,8 @@ var renderer = (function () {
 
 	context.fillStyle = "gray";
 	context.fillRect( 0,0, screenW, screenH );
+
+	_drawMap( context );
 
 	var i,
 	    entity,
@@ -172,6 +227,7 @@ var renderer = (function () {
     }
 
     return {
+	updateViewport: function( target ){ _viewport.updateViewport( target.x, target.y ); },
 	render: _render
     };
 }) ();
@@ -196,6 +252,18 @@ var physics = (function () {
 	update: _update
     };
 }) ();
+
+// ----------------------------------------------------------------
+// MAP ENGINE AND TILE OBJECT
+// Tile object stores information for each tile
+function Tile(tx, ty, tt) {
+    this.x = tx;
+    this.y = ty;
+    this.type = tt;
+    this.roof = null;
+    this.roofType = 0;
+    this.eventEnter = null;	// Can be a function pointer to execute event or null
+}
 
 // ----------------------------------------------------------------
 // We need a map system that will manage all of the Tiles on the map
@@ -224,8 +292,97 @@ var map = (function () {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ];
 
-    var _tileTypes = 
+    var _roofList = [				// Roof data
+	{ x:5, y:3, w:4, h:7, data: [
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11,
+	    10, 10, 11, 11
+	]},
+	{ x:15, y:5, w:5, h:4, data: [
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11,
+	    10, 10, 11, 11, 11
+	]},
+	{ x:14, y:9, w:6, h:7, data: [
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11,
+	    10, 10, 10, 11, 11, 11
+	]}
+    ];
 
+    var _tileTypes = {				// Tile type definition data
+	0 : { color:"black", floor:_floorTypes.solid },
+	1 : { color:"green", floor:_floorTypes.path },
+	2 : { color:"tan", floor:_floorTypes.path },
+	3 : { color:"brown", floor:_floorTypes.solid },
+	4 : { color:"blue", floor:_floorTypes.water },
+
+	10 : { color:"grey", floor:_floorTypes.solid },
+	11 : { color:"grey", floor:_floorTypes.solid }
+    };
+    var _mapW = 20;
+    var _mapH = 20;
+
+    // Map class data
+    var _mapData = [];				// Array of Tile objects
+    var _w = 0;
+    var _h = 0;
+    var _tileSize = 40;
+    
+    function _buildMapFromData( d, w, h ) {
+	_w = w;
+	_h = h;
+
+	// Check the array length
+	if( d.length != (w * h) ) { return false; }
+	_mapData.length = 0;
+
+	// Populate the map
+	for( var y = 0; y < h; y++ ) {
+	    for( var x = 0; x < w; x++ ) {
+		_mapData.push( new Tile( x, y, d[ (( y*w ) + x) ] ) );
+	    }
+	}
+    };
+
+    function _addRoofs( roofs ) {
+	for( var i in roofs ) {
+	    var r = roofs[i];
+
+	    if( r.x < 0 || r.y < 0 || r.x >= _w || r.y >= _h || (r.x + r.w) > _w || (r.y + r.h) > _h || r.data.length != (r.w * r.h)) {
+		continue; 			// Skip this item in the list if position is invalid	
+	    }
+
+	    for( var y = 0; y < r.h; y++ ) {
+	        for( var x = 0; x < r.w; x++ ) {
+		    var tileIdx = (( ( r.y + y) * this.w) + r.x + x);
+
+		    _mapData[ tileIdx ].roof = r;
+		    _mapData[ tileIdx ].rootType = r.data[ (( y* r.w) + x) ];
+	        }
+	    }
+	}
+    };
+
+    return {
+	buildMap : function() { _buildMapFromData( _gameMap, _mapW, _mapH ); },
+	tileTypes : function( index ) { return _tileTypes[index]; },
+	tileSize : function() { return _tileSize; },
+	mapWidth : function() { return _mapW; },
+	mapHeight : function() { return _mapH; },
+	getTile : function( x, y ) { return _mapData[ (y * _w) + x ]; },
+	getTileByIndex : function( index ) { return _mapData[ index ]; }
+    };
+    
 }) ();
 
 // ----------------------------------------------------------------
@@ -251,10 +408,11 @@ var core = (function () {
 	_currentTime = Data.now();
 
 	if(!_started) {
+	    map.buildMap();
 	    window.requestAnimationFrame( this.update.bind(this) );
 	    _started = true;
 	}
-    }
+    };
 
     // Main loop
     function _update() {
@@ -263,15 +421,18 @@ var core = (function () {
 	_deltaTime = _currentTime - _lastTime;
 
 	// Call the update methods of the other systems
-
 	// Input - Keyboard, Mouse and Touch events
-	// Physics - Collisions (Movement)
+	physics.update(_deltaTime);	// Physics - Collisions (Movement)
 	// AI - Enemy control behaviors
 	// Combat - Weapons, attack status, Collisions (Attacking)
-	// Rendering
+	if(_player){
+	    renderer.updateViewport(_player);
+	}
+	renderer.render(_canvas);	// Rendering
+
 
 	window.requestAnimationFrame( this.update.bind(this) );
-    }
+    };
 
     function _addEntity( entity ) {
 	_entityList.push( entity );
@@ -282,7 +443,7 @@ var core = (function () {
 	if( entity instanceof Enemy ) {
 	    _enemies.push( entity );
 	}
-    }
+    };
 
     function _removeEntities( entities ) {
 	if( !entities ) return;
@@ -294,7 +455,7 @@ var core = (function () {
 	if(entities.includes(_player) ){
 	    _player = undefined;
 	}
-    }
+    };
 
     return {
 	start: _start,
@@ -306,3 +467,88 @@ var core = (function () {
 	gameFieldRect: function () { return _gameFieldRect; }
     };
 }) ();
+
+// ------------------------------------------
+// The Player Actions object encapsulates input parsing
+var playerActions = (function () {
+    var _ongoingActions = [];
+
+    function _startAction(id, playerAction) {
+	//console.log("playerActions() call");
+        if( playerAction === undefined ) {
+            return;
+        }
+
+        var f,
+            acts = {"moveDown":  function () { if(core.player()) core.player().moveDown(true); },
+		    "moveUp":  function () { if(core.player()) core.player().moveUp(true); },
+		    "moveLeft":  function () { if(core.player()) core.player().moveLeft(true); },
+                    "moveRight": function () { if(core.player()) core.player().moveRight(true); },
+		  //"dodge": function () { if(core.player()) core.player().dodge(); },
+                    "attack":      function () { if(core.player()) core.player().attack(); } };
+
+        if(f = acts[playerAction]) f();
+
+        _ongoingActions.push( {identifier:id, playerAction:playerAction} );
+    }
+
+    function _endAction(id) {
+        var f,
+            acts = {"moveDown":  function () { if(core.player()) core.player().moveDown(false); },
+		    "moveUp":  function () { if(core.player()) core.player().moveUp(false); },
+		    "moveLeft":  function () { if(core.player()) core.player().moveLeft(false); },
+                    "moveRight": function () { if(core.player()) core.player().moveRight(false); } };
+
+        var idx = _ongoingActions.findIndex(function(a) { return a.identifier === id; });
+
+        if (idx >= 0) {
+            if(f = acts[_ongoingActions[idx].playerAction]) f();
+            _ongoingActions.splice(idx, 1);  // remove action at idx
+        }
+    }
+
+    return {
+        startAction: _startAction,
+        endAction: _endAction
+    };
+})();
+
+
+// ------------------------------------------
+// Keyboard
+var keybinds = { 16: "dodge",		// Shift
+		 32: "attack",		// Space
+                 37: "moveLeft",
+		 38: "moveUp",
+                 39: "moveRight",
+		 40: "moveDown" };
+
+function keyDown(e) {
+    var x = e.which || e.keyCode;  // which or keyCode depends on browser support
+
+    if( keybinds[x] !== undefined ) {
+        e.preventDefault();
+        playerActions.startAction(x, keybinds[x]);
+    }
+};
+
+function keyUp(e) {
+    var x = e.which || e.keyCode;
+
+    if( keybinds[x] !== undefined ) {
+        e.preventDefault();
+        playerActions.endAction(x);
+    }
+};
+
+//document.body.addEventListener('keydown', keyDown);
+//document.body.addEventListener('keyup', keyUp);
+
+window.addEventListener('keydown' , keyDown );
+window.addEventListener('keyup' , keyUp );
+
+
+
+// ----------------------------------------------------------------
+// Trigger the core.start method when the page loads (Experimental)
+document.addEventListener('DOMContentLoaded', core.start);
