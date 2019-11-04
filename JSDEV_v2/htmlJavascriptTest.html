@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+		<title> Example </title>
+	</head>
+	<body>
+		<h1>
+			Welcome
+		</h1>
+		<canvas id="canvas"></canvas>
+
+		<script>
+			var canvas = document.getElementById("canvas")
+			var context = canvas.getContext("2d");
+
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+
+			var lastWidth = width;
+			var lastHeight = height;
+
+			var draw = function() {
+				// Get the window size every frame
+				width = window.innerWidth;
+				height = window.innerHeight;
+
+				if( width != lastWidth || height != lastHeight) {
+					// Find the 
+
+				context.fillStyle = "black";
+				context.fillRect(0,0,width,height);
+
+				window.requestAnimationFrame( draw );
+			}
+
+			draw();
+			
+		</script>
+	</body>
+</html>
