@@ -4,35 +4,130 @@
 	<head>
 		<meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
 		<title> Example </title>
+		<style>
+			#canvasDiv{
+				background-Color: gray;
+				left: auto;
+				right: auto;
+			}
+			#leftDiv{
+				background-Color: blue;
+				float: left;
+				width: 50%;
+			}
+			#rightDiv{
+				background-Color: red;
+				float: right;
+				width: 50%;
+			}
+			
+			
+		</style>
 	</head>
 	<body>
-		<h1>
-			Welcome
-		</h1>
-		<canvas id="canvas"></canvas>
+		<div id="canvasDiv">
+			<canvas id="canvas"></canvas>
+		</div>
+		<div id="leftDiv">Left Div</div>
+		<div id="rightDiv">Right Div</div>
 
 		<script>
-			var canvas = document.getElementById("canvas")
+			var canvas = document.getElementById("canvas");
 			var context = canvas.getContext("2d");
 
-			var width = window.innerWidth;
-			var height = window.innerHeight;
+			var divCanvas = document.getElementById("canvasDiv");
+			var divLeft = document.getElementById("leftDiv");
+			var divRight = document.getElementById("rightDiv");
+
+			var width = 0;
+			var height = 0;
+
+			var canvasWidth = 0;
+			var canvasHeight = 0;
 
 			var lastWidth = width;
 			var lastHeight = height;
 
-			var draw = function() {
-				// Get the window size every frame
+			var setup = function() {
 				width = window.innerWidth;
 				height = window.innerHeight;
 
-				if( width != lastWidth || height != lastHeight) {
-					// Find the 
+				windowCheck( width, height );
+
+			}
+
+			var draw = function() {
+				// Get the window size every frame
+				var nWidth = window.innerWidth;
+				var nHeight = window.innerHeight;
+
+				// Check for changes in the window size
+				if( nWidth != lastWidth || nHeight != lastHeight) {
+					// If the window size changed, update the DOM
+					windowCheck( nWidth, nHeight );
+					
+				}
 
 				context.fillStyle = "black";
-				context.fillRect(0,0,width,height);
+				context.fillRect(0,0,canvas.width,canvas.height);
 
 				window.requestAnimationFrame( draw );
+			}
+
+			var windowCheck = function( vwidth, vheight) {
+				if(vwidth < vheight){
+					//Portrait
+					//canvasDiv sits at the top
+					canvasDiv.style.top = 0;
+					canvasDiv.style.backgroundColor = "blue";
+					canvasDiv.style.display = "block";
+					canvasDiv.style.left = 0;
+					canvasDiv.style.right = 0;
+					canvasDiv.style.width = vwidth;
+					canvasDiv.style.height = vwidth;	
+
+					// We need to update the canvas dimensions
+					canvas.width = vwidth;
+					canvas.height = vwidth;
+					
+					divLeft.style.display = "block";
+					divLeft.style.width = vwidth/2;
+					divLeft.style.height = vheight - vwidth;
+
+					divRight.style.display = "block";
+					divRight.style.width = vwidth/2;
+					divRight.style.height = "auto";
+					divRight.style.right = 0;
+					//console.log("PORTRAIT! Canvas Size: " + canvas.width + " by " + canvas.height + ", div size: "+ canvasDiv.clientWidth + " , " + canvasDiv.clientHeight);
+				}else if( vwidth > vheight){
+					//Landscape
+					//canvasDiv sits in between the left and right divs
+					canvasDiv.style.top = 0;
+					canvasDiv.style.backgroundColor = "grey";
+					canvasDiv.style.display = "inline";
+					canvasDiv.style.left = "auto";
+					canvasDiv.style.right = "auto";
+					canvasDiv.style.width = vheight;
+					canvasDiv.style.height = "400px";
+
+					// Update the canvas dimensions
+					canvas.width = 400;
+					canvas.height = 400;
+					//console.log("LANDSCAPE! Canvas Size: " + canvas.width + " by " + canvas.height + ", div size: "+ canvasDiv.clientWidth + " , " + canvasDiv.clientHeight);
+					
+					var sideBar = (vwidth - vheight)/2;
+					divLeft.style.display = "inline";
+					divLeft.style.width = sideBar;
+					divLeft.style.height = "vHeight";
+					
+
+					divRight.style.display = "inline";
+					divRight.style.width = "auto";
+					divRight.style.height = "vHeight";
+
+				}else if( vwidth == vheight){
+				
+				}
 			}
 
 			draw();
