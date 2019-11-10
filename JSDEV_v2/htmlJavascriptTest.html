@@ -7,7 +7,7 @@
 		<script type="text/javascript> src="TileMapDev/scripts/refactoredDev.js"></script>
 		<style>
 			#canvasDiv{
-				background-Color: gray;
+				background-Color: black;
 				margin: 0 auto;
 				align-content: center;
 				align-items: center;
@@ -117,6 +117,7 @@ function Entity( x, y, speed, direction ) {
     this.y = y;
     this.speed = speed;
     this.direction = direction;
+    	
     this.w = 5;
     this.h = 5;
     this.hp = 1;
@@ -135,6 +136,20 @@ Entity.prototype.collisionRect = function() {
 function Player( x, y, speed, direction) {
     Entity.call( this, x, y, speed, direction );
 
+    this.vX = 0;	// vX and vY work with the velocity
+    this.vY = 0;
+    this.dX = 0;	// dX and dY work with the direction
+    this.dY = 0;
+
+    //Movement flags
+    this.movingUp = false;
+    this.movingDown = false;
+    this.movingRight = false;
+    this.movingLeft = false;
+    this.attacking = false;
+    this.dashing = false;
+
+    // Dimensions
     this.w = 15;
     this.h = 30;
 }
@@ -145,6 +160,50 @@ Player.prototype.update = function( dt ) {
     Entity.prototype.update.call( this, dt );
     
     // Player-specific updates
+}
+
+Player.prototype.updateDirection = function(){
+    this.direction = 0;
+
+    if( this.movingUp ){
+	this.dY = -1;
+	this.direction += 1;
+    }if( this.movingDown ){
+	this.dY = 1;
+	his.direction += 2;
+    }if( this.movingLeft ){
+	this.dX = -1;
+	his.direction += 4;
+    }if( this.movingRight ){
+	this.dX = 1;
+	his.direction += 8;
+    }
+}
+
+Player.prototype.moveUp = function( value ){
+    this.movingUp = value;
+}
+
+Player.prototype.moveDown = function( value ){
+    this.movingDown = value;
+}
+
+Player.prototype.moveLeft = function( value ){
+    this.movingLeft = value;
+}
+
+Player.prototype.moveRight = function( value ){
+    this.movingRight = value;
+}
+
+Player.prototype.attack = function(){
+    //this.attacking = true;
+    // No-op, need timing data
+}
+
+Player.prototype.dash = function(){
+    //this.dashing = true;
+    // No-op, need timing data
 }
 
 // ----------------------------------------------------------------
@@ -161,26 +220,26 @@ Enemy.prototype = Object.create( Entity.prototype );
 Enemy.prototype.update = function( dt ) {
     Entity.prototype.update.call( this, dt );
     
-    // Player-specific updates
+    // Enemy-specific updates
 }
 
 // ----------------------------------------------------------------
 // Encapsulate viewport into separate object
-var Viewport = function (size) {
+function Viewport(size, width, height){
     // Members for viewport object
-    var screenX = 0;
-    var screenY = 0;
-    var startTileX = 0;
-    var startTileY = 0;
-    var endTileX = 0;
-    var endTileY = 0;
-    var offsetX = 0;
-    var offsetY = 0;
-    var tileSize = size;
+    this.screenX = width;	// Screen Width(X) and Height(Y)
+    this.screenY = height;
+    this.startTileX = 0;	// Upper-left tile
+    this.startTileY = 0;
+    this.endTileX = 0;		// Lower-right tile
+    this.endTileY = 0;
+    this.offsetX = 0;		// Offset from tileMap origin
+    this.offsetY = 0;
+    this.tileSize = size;	// Pixel size of tiles
 }
 
 Viewport.prototype.updateViewport = function( px, py ) {
-    console.log("UpdateViewport at " + px + ", " + py);
+    //console.log("UpdateViewport at " + px + ", " + py);
     this.offsetX = Math.floor((this.screenX/2) - px); 	// (400/2) - 200 = 200
     this.offsetY = Math.floor((this.screenY/2) - py); 	// (400/2) - 200 = 200
 
@@ -203,7 +262,7 @@ Viewport.prototype.updateViewport = function( px, py ) {
 // ----------------------------------------------------------------
 // The render system takes care of canvas drawing
 var renderer = (function () {
-    var _viewport = new Viewport(20);
+    var _viewport = null;
     var _entityColors = [ "rgb(150, 7, 7)",
 			  "rgb(150, 89, 7)",
 			  "rgb(56, 150, 7)",
@@ -211,40 +270,56 @@ var renderer = (function () {
 			  "rgb(46, 7, 150)",
 			  "rgb(99, 66, 245)"];
 
+    function _initViewport( tileSize, screenW, screenH ) {
+	this._viewport = new Viewport( tileSize, screenW, screenH );
+    }
+
     function _drawRectangle( context, color, entity ) {
 	context.fillStyle = color;
 	context.fillRect( entity.x - (entity.w / 2), entity.y - (entity.h / 2), entity.w, entity.h );
     }
 
     function _drawMap( context ) {
-	for(var y = _viewport.startTileY; y < _viewport.endTileY; ++y)
-	{
-	    for(var x = _viewport.startTileX; x < _viewport.endTileX; ++x)
+	if(_viewport != null){
+	    for(var y = _viewport.startTileY; y < _viewport.endTileY; ++y)
 	    {
-		// Get the Tile object data for the current tile data
-		var mapTile = map.getTile( x, y);
-		// Get the color for the fillStyle from the Tile data
-		var tType = map.tileTypes( mapTile.type );
-		context.fillStyle = tType.color;
-		// Draw the tile with the offset
-		context.fillRect( _viewport.offsetX + (x * _viewport.tileSize), _viewport.offsetY + (y * _viewport.tileSize), _viewport.tileSize, _viewport.tileSize);
+	        for(var x = _viewport.startTileX; x < _viewport.endTileX; ++x)
+	        {
+		    // Get the Tile object data for the current tile data
+		    var mapTile = map.getTile( x, y);
+		    // Get the color for the fillStyle from the Tile data
+		    var tType = map.tileTypes( mapTile.type );
+		    context.fillStyle = tType.color;
+		    // Draw the tile with the offset
+		    context.fillRect( _viewport.offsetX + (x * _viewport.tileSize), _viewport.offsetY + (y * _viewport.tileSize), _viewport.tileSize, _viewport.tileSize);
+		
+	        }
+	    }
+	}else{
+	    for(var y = 0; y < 10; y++){
+		for(var x = 0; x < 10; x++){
+		    var mapTile = map.getTile(x,y);
+		    
+		    var tType = map.tileTypes(mapTile.type);
+			
+		    //console.log("Tile Color = " + tType.color);
+		    context.fillStyle = tType.color;
+		    //context.fillRect(x * map.tileSize, y * map.tileSize, map.tileSize, map.tileSize);
+		}
 	    }
 	}
     }
 
     function _render( canvas ) {
-	var canvas = document.getElementById("canvas");
+	//var canvas = document.getElementById("canvas");
 	var context = canvas.getContext("2d")
 
 	// Loop through all drawable entities
 	var screenW = canvas.width;
 	var screenH = canvas.height;
 
-	_viewport.screenX = screenW;
-	_viewport.screenY = screenH;
-
-	context.fillStyle = "gray";
-	context.fillRect( 0,0, screenW, screenH );
+	//context.fillStyle = "gray";
+	//context.fillRect( 0,0, screenW, screenH );
 
 	_drawMap( context );
 
@@ -258,7 +333,7 @@ var renderer = (function () {
 	    if( entity instanceof Enemy ) {
 		_drawRectangle( context, _entityColors[0], entity);
 	    } else if( entity instanceof Player ) {
-		_drawRectangle( context, _entityColors[5] ,entity);
+		_drawRectangle( context, "blue" ,entity);
 	    }
 	}
 	
@@ -266,9 +341,17 @@ var renderer = (function () {
 	if( _outputCounter < _maxOutput){
 	    _outputCounter += 1;
 	}else{
-	    console.log("viewport: " + _viewport.screenX + ", " + _viewport.screenY);
-	    console.log("player: " + _pX + ", " + _pY);
+	    //console.log("viewport: " + _viewport.screenX + ", " + _viewport.screenY);
+	    //console.log("player: " + _pX + ", " + _pY);
 	    _outputCounter = 0;
+	}
+    }
+
+    function _updateViewport( x, y ) {
+	_pX = x;
+	_pY = y;
+	if(_viewport != null) {
+	    _viewport.updateViewport(x, y);
 	}
     }
 
@@ -279,10 +362,8 @@ var renderer = (function () {
     var _pY = 0;
 
     return {
-	updateViewport: function( target ){ 
-	    _pX = target.x;
-	    _pY = target.y;
-	    _viewport.updateViewport( target.x, target.y ); },
+	initViewport: function(size, w, h){ _initViewport(size,w,h); },
+	updateViewport: function( tX, tY ){ _updateViewport( tX, tY ); },
 	render: _render
     };
 }) ();
@@ -400,6 +481,13 @@ var map = (function () {
     var _tileSize = 40;
     
     function _buildMapFromData( d, w, h ) {
+	// Use internal array if values are null
+	if( d == null || w == null || h == null) {
+	    d = _gameMap;
+	    w = _mapW;
+	    h = _mapH;
+	    console.log("Using internal map");
+	}
 	_w = w;
 	_h = h;
 
@@ -435,7 +523,7 @@ var map = (function () {
     };
 
     return {
-	buildMap : function() { _buildMapFromData( _gameMap, _mapW, _mapH ); },
+	buildMap : function() { _buildMapFromData(); },
 	tileTypes : function( index ) { return _tileTypes[index]; },
 	tileSize : function() { return _tileSize; },
 	width : function() { return _mapW; },
@@ -476,7 +564,7 @@ var core = (function () {
 	//if(!_started) {
 	    _addEntity( new Player( 100, 100, 0, 0));
 	    map.buildMap();
-	    
+	    renderer.initViewport( 40, 400, 400);	    
 	    window.requestAnimationFrame( _update.bind(this) );
 	    _started = true;
 	//}
@@ -495,7 +583,7 @@ var core = (function () {
 	// Combat - Weapons, attack status, Collisions (Attacking)
 	if(_player){
 	    
-	    renderer.updateViewport(_player);
+	    renderer.updateViewport(_player.x , _player.y);
 	}
 	renderer.render(_canvas);	// Rendering
 
