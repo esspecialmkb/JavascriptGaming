@@ -311,7 +311,7 @@ var renderer = (function () {
 		for(var x = 0; x < 10; x++){
 		    var mapTile = map.getTile(x,y);
 		    
-		    var tType = map.tileTypes(mapTile.type);
+		    var tType = map.getTileTypes(mapTile.type);
 			
 		    //console.log("Tile Color = " + tType.color);
 		    context.fillStyle = tType.color;
@@ -383,8 +383,44 @@ var renderer = (function () {
 
 // ----------------------------------------------------------------
 // The physics system deals with collisions and gravity
+// This system might need to track forces and apply them to entities
 var physics = (function () {
+    var _delta = 0;
+    function _updatePlayer( p ){
+	var tSize = map.tileSize();
+	var step = (1/_delta) * map.tileSize();
+	var stepX = Math.floor(p.dX * p.speed * step);
+	var stepY = Math.floor(p.dY * p.speed * step);
+
+	var tTileX = Math.floor((p.x + stepX) /tSize );
+	var tTileY = Math.floor((p.y + stepY) /tSize );
+	var tile = map.getTile(tTileX, tTileY);
+	if(map.getTileTypes( tile.tt ) == 0  || 2){
+	    // Get tile boundaries
+	    var xmin = tTileX * tSize;
+	    var xmax = xmin + tSize;
+	    var ymin = tTileY * tSize;
+	    var ymax = ymin + tSize;
+
+	    if( p.dX > 0){
+		if(){
+		    
+		}
+	    }
+	    if( p.dX < 0){
+
+	    }
+	    if( p.dY > 0){
+
+	    }
+	    if( p.dY < 0){
+
+	    }
+	}	
+    }
+
     function _update( dt ) {
+	_delta = dt;
 	var i,
 	    e,
 	    velocity,
@@ -394,6 +430,11 @@ var physics = (function () {
 	    e = entities[i];
 	    //velocity = vectorScalarMultiply( e.direction, e.speed);
 	    //e.position = vectorAdd( e.position, vectorScalarMultiply( velocity, dt ) );
+	    if(e instanceof Enemy){
+
+	    }else if(e instanceof Player){
+
+	    }
 	}
     }
 
@@ -537,7 +578,7 @@ var map = (function () {
 
     return {
 	buildMap : function() { _buildMapFromData(); },
-	tileTypes : function( index ) { return _tileTypes[index]; },
+	getTileTypes : function( index ) { return _tileTypes[index]; },
 	tileSize : function() { return _tileSize; },
 	width : function() { return _mapW; },
 	height : function() { return _mapH; },
