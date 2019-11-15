@@ -159,45 +159,53 @@ Player.prototype = Object.create( Entity.prototype );
 Player.prototype.update = function( dt ) {
     Entity.prototype.update.call( this, dt );
     
-    // Player-specific updates
+    this.x += (this.dX * (1/dt) * (this.speed * map.tileSize()));
+    this.y += (this.dY * (1/dt) * (this.speed * map.tileSize()));
+    // Player-specific updates  
 }
 
 Player.prototype.updateDirection = function(){
     this.direction = 0;
+    this.dY = 0;
+    this.dX = 0;
 
     if( this.movingUp ){
 	this.dY = -1;
 	this.direction += 1;
     }if( this.movingDown ){
 	this.dY = 1;
-	his.direction += 2;
+	this.direction += 2;
     }if( this.movingLeft ){
 	this.dX = -1;
-	his.direction += 4;
+	this.direction += 4;
     }if( this.movingRight ){
 	this.dX = 1;
-	his.direction += 8;
+	this.direction += 8;
     }
 }
 
 Player.prototype.moveUp = function( value ){
     this.movingUp = value;
+    this.updateDirection();
 }
 
 Player.prototype.moveDown = function( value ){
     this.movingDown = value;
+    this.updateDirection();
 }
 
 Player.prototype.moveLeft = function( value ){
     this.movingLeft = value;
+    this.updateDirection();
 }
 
 Player.prototype.moveRight = function( value ){
     this.movingRight = value;
+    this.updateDirection();
 }
 
 Player.prototype.attack = function(){
-    //this.attacking = true;
+    this.attacking = true;
     // No-op, need timing data
 }
 
@@ -235,15 +243,13 @@ function Viewport(size, width, height){
     this.endTileY = 0;
     this.offsetX = 0;		// Offset from tileMap origin
     this.offsetY = 0;
-    this.tileSize = size;	// Pixel size of tiles
+    this.tileSize = 40; //size;	// Pixel size of tiles
 }
-
 Viewport.prototype.updateViewport = function( px, py ) {
-    //console.log("UpdateViewport at " + px + ", " + py);
-    this.offsetX = Math.floor((this.screenX/2) - px); 	// (400/2) - 200 = 200
+    this.offsetX = Math.floor((this.screenX/2) - px); 	// (400/2) - 200 = 200 - 200 = 0;
     this.offsetY = Math.floor((this.screenY/2) - py); 	// (400/2) - 200 = 200
 
-    var tileX = Math.floor(px/this.tileSize);		// 200/40 = 10
+    var tileX = Math.floor(px/this.tileSize);		// 200/40 = 5
     var tileY = Math.floor(py/this.tileSize);
 
     this.startTileX = tileX - 1 - Math.ceil((this.screenX/2) / this.tileSize);	// tileX:5 - 1 - ((400/2) / 40)
@@ -271,12 +277,17 @@ var renderer = (function () {
 			  "rgb(99, 66, 245)"];
 
     function _initViewport( tileSize, screenW, screenH ) {
-	this._viewport = new Viewport( tileSize, screenW, screenH );
+	_viewport = new Viewport( tileSize, screenW, screenH );
+	console.log("initViewport");
     }
 
     function _drawRectangle( context, color, entity ) {
 	context.fillStyle = color;
-	context.fillRect( entity.x - (entity.w / 2), entity.y - (entity.h / 2), entity.w, entity.h );
+	if(_viewport != null) {
+	    context.fillRect( _viewport.offsetX + (entity.x - (entity.w/2)), _viewport.offsetY + (entity.y - (entity.h/2)), entity.w, entity.h);
+	}else{
+	    context.fillRect( entity.x - (entity.w / 2), entity.y - (entity.h / 2), entity.w, entity.h );
+	}
     }
 
     function _drawMap( context ) {
@@ -318,8 +329,10 @@ var renderer = (function () {
 	var screenW = canvas.width;
 	var screenH = canvas.height;
 
-	//context.fillStyle = "gray";
-	//context.fillRect( 0,0, screenW, screenH );
+	context.fillStyle = "gray";
+	context.fillRect( 0,0, screenW, screenH );
+	
+	_updateViewport( core.player().x, core.player().y );
 
 	_drawMap( context );
 
@@ -562,7 +575,7 @@ var core = (function () {
 	console.log("Start loop");
 
 	//if(!_started) {
-	    _addEntity( new Player( 100, 100, 0, 0));
+	    _addEntity( new Player( 200, 200, 1, 0));
 	    map.buildMap();
 	    renderer.initViewport( 40, 400, 400);	    
 	    window.requestAnimationFrame( _update.bind(this) );
@@ -577,15 +590,19 @@ var core = (function () {
 	_deltaTime = _currentTime - _lastTime;
 
 	// Call the update methods of the other systems
-	// Input - Keyboard, Mouse and Touch events
-	physics.update(_deltaTime);	// Physics - Collisions (Movement)
+	// Physics - Collisions (Movement)
+	physics.update(_deltaTime);	
+
 	// AI - Enemy control behaviors
+
 	// Combat - Weapons, attack status, Collisions (Attacking)
+
 	if(_player){
-	    
-	    renderer.updateViewport(_player.x , _player.y);
+	    _player.update( _deltaTime );
+	    //renderer.updateViewport(_player.x , _player.y);
 	}
-	renderer.render(_canvas);	// Rendering
+	// Rendering
+	renderer.render(_canvas);	
 
 
 	window.requestAnimationFrame( _update.bind(this) );
