@@ -1,111 +1,83 @@
-// Game Entities
+// ----------------------------------------------------------------
+// The player object is based off of the Entity prototype/object
+function Player( x, y, speed, direction) {
+    Entity.call( this, x, y, speed, direction );
 
-// --- Player Object
-function Player(x, y) {
-    this.x = x;
-    this.y = y;
-    this.width = 15;
-    this.height = 30;
-    this.direction = 0;		// [North, East, South, West] - (Up:1, Right:2, Down:4, Left:8)
+    this.vX = 0;	// vX and vY work with the velocity
+    this.vY = 0;
+    this.dX = 0;	// dX and dY work with the direction
+    this.dY = 0;
 
-    // Movement flags
+    //Movement flags
     this.movingUp = false;
     this.movingDown = false;
-    this.movingLeft = false;
     this.movingRight = false;
+    this.movingLeft = false;
+    this.attacking = false;
+    this.dashing = false;
 
-    // Movement data
-    this.moveSpeed = renderer.tileSize() * 0.05;
-    this.directionX = 0;
-    this.directionY = 0;
-    this.tileX = 0;
-    this.tileY = 0;
-    this.tileToX = 0;
-    this.tileToY = 0;
-
-    // Attack data
-    this.timeAttack = 0;
-    this.timeAttackLast = 0;
-    this.attackCooldown = 100;
-    this.isAttacking = false;
+    // Dimensions
+    this.w = 15;
+    this.h = 30;
 }
 
-Player.prototype.update = function () {
-    // The player's update function
+Player.prototype = Object.create( Entity.prototype );
 
-    // * Get the player's tile position
-    this.tileX = Math.floor( (this.x + (this.width/2)) / renderer.tileSize() );
-    this.tileY = Math.floor( (this.y + (this.height/2)) / renderer.tileSize() );
+Player.prototype.update = function( dt ) {
+    //console.log("Player update called!");
+    Entity.prototype.update.call( this, dt );
+    
+    this.vX = (this.dX * (1/dt) * (this.speed * map.tileSize()));
+    this.vY = (this.dY * (1/dt) * (this.speed * map.tileSize()));
+    // Player-specific updates  
+}
 
-    // * Adding the direction vector gives us the target tile
-    this.tileToX = this.tileX + this.directionX;
-    this.tileToY = this.tileY + this.directionY;
-
-    // * Since we need to check for collisions, we'll leave the rest to the physics object
-
-    // Check attack status
-    if( this.isAttacking === true ) {
-	// increment attack time
-	this.timeAttack = Date.now() - this.timeAttackLast;
-	if( this.timeAttack > this.attackCooldown ) {
-	    this.isAttacking = false;
-	}
-    }
-};
-
-Player.prototype.updateDirection = function() {
-    var x = 0;
-    var y = 0;
+Player.prototype.updateDirection = function(){
     this.direction = 0;
+    this.dY = 0;
+    this.dX = 0;
 
-    if( this.movingUp ) {
-	y -= 1;
+    if( this.movingUp ){
+	this.dY = -1;
 	this.direction += 1;
-    }
-    if( this.movingDown ) {
-	y += 1;
-	this.direction += 4;
-    }
-    if( this.movingLeft ) {
-	x -= 1;
+    }if( this.movingDown ){
+	this.dY = 1;
 	this.direction += 2;
-    }
-    if( this.movingRight ) {
-	x += 1;
+    }if( this.movingLeft ){
+	this.dX = -1;
+	this.direction += 4;
+    }if( this.movingRight ){
+	this.dX = 1;
 	this.direction += 8;
     }
-    
-    this.directionX = x;
-    this.directionY = y;
-};
+}
 
-Player.prototype.moveUp = function(enable) {
-    this.movingUp = enable
+Player.prototype.moveUp = function( value ){
+    this.movingUp = value;
     this.updateDirection();
-};
+}
 
-Player.prototype.moveDown = function(enable) {
-    this.movingDown = enable;
+Player.prototype.moveDown = function( value ){
+    this.movingDown = value;
     this.updateDirection();
-};
+}
 
-Player.prototype.moveLeft = function(enable) {
-    this.movingLeft = enable;
+Player.prototype.moveLeft = function( value ){
+    this.movingLeft = value;
     this.updateDirection();
-};
+}
 
-Player.prototype.moveRight = function(enable) {
-    this.movingRight = enable;
+Player.prototype.moveRight = function( value ){
+    this.movingRight = value;
     this.updateDirection();
-};
+}
 
-Player.prototype.attack = function() {
-    // Attack function
-    var tNow = Date.now();
-    if(this.isAttacking === false) {
-	// Start the attack
-	this.timeAttackLast = tNow;
-	this.timeAttack = 0;
-	this.isAttacking = true;
-    }
-};
+Player.prototype.attack = function(){
+    this.attacking = true;
+    // No-op, need timing data
+}
+
+Player.prototype.dash = function(){
+    //this.dashing = true;
+    // No-op, need timing data
+}

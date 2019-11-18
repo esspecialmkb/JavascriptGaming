@@ -1,63 +1,45 @@
-// --- Physics Object
+// ----------------------------------------------------------------
+// The physics system deals with collisions and gravity
+// This system might need to track forces and apply them to entities
 var physics = (function () {
-    function _playerUpdate( player ) {
-	// Update player movement
-	player.x += (player.directionX * player.moveSpeed);
-	player.y += (player.directionY * player.moveSpeed);
+    var _delta = 0;
+    function _testMovement(){}
 
-	player.x = Math.floor( player.x );
-	player.y = Math.floor( player.y );
+    function _updatePlayer( p ){
+	if(_delta == 0) { return; }
+	var tSize = map.tileSize();
 
-        if( game.getMapTile( player.tileToX, player.tileToY ) == 0 ){
-	    // Get tile boundaries
-	    var minX = player.tileToX * renderer.tileSize();
-	    var maxX = minX + renderer.tileSize();
-	    var minY = player.tileToY * renderer.tileSize();
-	    var maxY = minY + renderer.tileSize();
+	// Move the player according to velocity
+	p.x += p.vX;
+	p.y += p.vY;
 
-            if( player.directionX > 0){
-		if( ( player.x + player.width ) > minX ){
-		    player.x = minX - player.width;
-		}
-	    }
-	    if( player.directionX < 0){
-		if( ( player.x ) < maxX ){
-		    player.x = maxX;
-		}
-	    }
-	    if( player.directionY > 0){
-		if( ( player.y + player.height ) > minY ){
-		    player.y = minY - player.height;
-		}
-	    }
-	    if( player.directionY < 0){
-		if( ( player.y ) < maxY ){
-		    player.y = maxY;
-		}
+	// Determine where the player currently stands
+	var centerX = Math.floor( p.x / tSize );
+	var centerY = Math.floor( p.y / tSize );
+
+	// Determine
+    }
+
+    function _update( dt ) {
+	_delta = dt;
+	var i,
+	    e,
+	    velocity,
+	    entities = core.entities();
+
+	for( i = 0; i < entities.length; i++ ) {
+	    e = entities[i];
+	    //velocity = vectorScalarMultiply( e.direction, e.speed);
+	    //e.position = vectorAdd( e.position, vectorScalarMultiply( velocity, dt ) );
+	    if(e instanceof Enemy){
+
+	    }else if(e instanceof Player){
+		_updatePlayer( e );
 	    }
 	}
     }
 
-    function _update( deltaTime ) {
-        var i,
-            entities = game.entities();
-
-        for( i=0; i<entities.length; i++) {
-            // Process Physics Updates
-	    //console.log("Entity update :" + i);
-
-	    if( entities[i] instanceof Player ) {
-		// The player entities has a different update process
-		_playerUpdate( entities[i] );
-	    }else{
-		// Non-player entities
-	    }
-	    	    
-        }
-    }
-
     return {
-        update: _update
+	update: _update
     };
-
-})();
+}) ();
