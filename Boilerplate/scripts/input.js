@@ -1,5 +1,8 @@
 // 	The input system encapsulates events to feed them to the right fsm states
 //	Keyboard Input
+
+//	Canvas Dependancy
+var cvs = null;
 var keyLogging = true;
 
 var enableKeyLogging = function(value){
@@ -78,11 +81,11 @@ var removeMouseEventListener = function( func, type){
 	window.removeEventListener( type, func );
 }
 
-window.addEventListener('onclick', mouseClick);	//The event occurs when the user clicks on an element
-window.addEventListener('onmousedown', mouseDown, false);	//The event occurs when the user presses a mouse button over an element
-window.addEventListener('onmouseup', mouseUp, false);	//The event occurs when a user releases a mouse button over an element
-window.addEventListener('onmousemove', mouseMove, true);	//The event occurs when the pointer is moving while it is over an element
-//window.addEventListener('oncontextmenu', mouseContext);//Right click
+window.addEventListener('click', mouseClick);	//The event occurs when the user clicks on an element
+window.addEventListener('mousedown', mouseDown, false);	//The event occurs when the user presses a mouse button over an element
+window.addEventListener('mouseup', mouseUp, false);	//The event occurs when a user releases a mouse button over an element
+window.addEventListener('mousemove', mouseMove, true);	//The event occurs when the pointer is moving while it is over an element
+//window.addEventListener('contextmenu', mouseContext);//Right click
 
 //	Touch Input
 var touchLogging = false;
@@ -91,7 +94,7 @@ var touchObjL = null;
 var touchObjR = null;
 var startLX = 0;
 var startLY = 0;
-var startRX = cvs.width/2;
+var startRX = 0;
 var startRY = 0;
 var distLX = 0;
 var distLY = 0;
