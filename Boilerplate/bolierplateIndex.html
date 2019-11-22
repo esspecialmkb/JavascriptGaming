@@ -1,37 +1,16 @@
 <!DOCTYPE html>
 
 <html>
-	<head>
-		<meta charset="UTF-8">
-		<title> Example </title>
-		<script type="text/javascript> src="scripts/canvas.js"></script>
-		<script type="text/javascript> src="scripts/input.js"></script>
-		<style>
-			#canvasDiv{
-				background-Color: black;
-				margin: 0 auto;
-				align-content: center;
-				align-items: center;
-				width: 100%;
-				height: 100%;
-			}
-
-			#canvas{
-				display: block;
-				position: relative;
-				margin: auto;
-				left: auto;
-				right: auto;
-				width: 400px;
-				height: 400px;
-			}			
-			
-		</style>
-	</head>
-	<body>
-		<div id="canvasDiv">
-			<canvas id="canvas" onload="core.start()"></canvas>
-		</div>
-		
-	</body>
+    	<head>
+        	<meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+        	<link rel="stylesheet" href="styles/style.css"/>
+        	<title>Hello, World!</title>
+    	</head>
+    	<body>
+        	<canvas style="width:100%; height:100%;"id="canvas"></canvas>
+    	</body>
+    
+	<script type="text/javascript" src="scripts/canvasHandle.js"></script>
+    	<script type="text/javascript" src="scripts/touchHandle.js"></script>
+	<script type="text/javascript" src="scripts/input.js"></script>
 </html>
