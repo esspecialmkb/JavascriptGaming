@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+        <link rel="stylesheet" href="styles/style.css"/>
+        <title>Hello, World!</title>
+    </head>
+    <body>
+        <canvas style="width:100%; height:100%;"id="canvas"></canvas>
+    </body>
+    <script type="text/javascript" src="scripts/canvashandle.js"</script>
+    <script>
+        
+        
+        var drawCircle = function(ra, x, y){
+															ctx.fillStyle = "white";
+
+															ctx.fillRect(x - (ra/2), y - (ra/2), ra, ra);
+															//ctx.arc(x,y,ra,0,2*Math.PI);
+															//ctx.fill()
+										}
+
+        var drawTouchInput = function(){
+            if(distLX < 0 || distLX > 0){
+                 ctx.fillStyle = "red";
+                 ctx.fillRect(xA - r,yA - r,distLX *-1,r);
+            }
+            if(distRX != 0){
+                 ctx.fillStyle = "blue";
+                 ctx.fillRect(xB - r,yB - r,distRX *-1,r);
+            }
+        }
+
+										var drawScreen = function(){
+															ctx.fillStyle = "black";
+            ctx.clearRect(0,0,cvs.width,cvs.height);
+															ctx.fillRect(0,0,cvs.width,cvs.height);
+
+															//drawCircle(r,xA,yA);
+
+															//drawCircle(r,xA + (Math.sin(a)*l), yA + (Math.cos(a)*l));
+
+															a += 0.1;
+            drawTouchInput();
+															window.requestAnimationFrame(drawScreen);
+										}
+
+        var touchObjL = null;
+        var touchObjR = null;
+        var startLX = 0;
+        var startLY = 0;
+        var startRX = cvs.width/2;
+        var startRY = 0;
+        var distLX = 0;
+        var distLY = 0;
+        var distRX = 0;
+        var distRY = 0;
+
+        function touchStart(ev){
+            switch(ev.touches.length){
+                 case 1: 
+                      oneTouch(ev); 
+                      if(ev.touches[0].pageX <= cvs.width/2){
+                          touchObjL = ev.touches[0];
+                          startLX = ev.touches[0].pageX;
+                          //console.log("LTStart");
+                      }else{
+                          touchObjR = ev.touches[0];
+                          startRX = ev.touches[0].pageX;
+                          //console.log("RTStart");
+                      }
+                      break;
+                 case 2: twoTouch(ev); 
+                      if(ev.touches[0].pageX <= cvs.width/2){
+                          touchObjL = ev.touches[0];
+                          startLX = ev.touches[0].pageX;
+
+                          touchObjR = ev.touches[1];
+                          startRX = ev.touches[1].pageX;
+                          
+                      }else{
+                          touchObjR = ev.touches[0];
+                          startRX = ev.touches[0].pageX;
+
+                          touchObjL = ev.touches[1];
+                          startLX = ev.touches[1].pageX;
+                      }
+
+                      //console.log("DTStart");
+
+                      break; 
+             }
+        }
+
+        function touchMove(ev){
+            //console.log(ev.changedTouches);
+            switch(ev.touches.length){
+                 case 1: oneTouch(ev);
+                      if(ev.touches[0].pageX <= cvs.width/2){
+                          touchObjL = ev.touches[0];
+                          distLX = startLX - ev.touches[0].pageX;
+                          //console.log("LX Moved " + distLX);
+                      }else{
+                          touchObjR = ev.touches[0];
+                          distRX = startRX - ev.touches[0].pageX;
+                          //console.log("RX Moved " + distRX);
+                      } 
+                      break;
+                 case 2: twoTouch(ev); 
+                      if(ev.touches[0].pageX <= cvs.width/2){
+                          touchObjL = ev.touches[0];
+                          distLX = startLX - ev.touches[0].pageX;
+
+                          touchObjR = ev.touches[1];
+                          distRX = startRX - ev.touches[1].pageX;
+                          
+                      }else{
+                          touchObjR = ev.touches[0];
+                          distRX = startRX - ev.touches[0].pageX;
+
+                          touchObjL = ev.touches[1];
+                          distLX = startLX - ev.touches[1].pageX;
+                      }
+                      //console.log("LX Moved " + distLX + ", RX Moved " + distRX);
+                      break;
+            }
+
+            switch(ev.changedTouches.length){
+                 case 1: oneTouch(ev); break;
+                 case 2: twoTouch(ev); break;
+            }
+
+            ev.preventDefault();
+        }
+
+        function touchEnd(ev){
+            console.log(ev);
+            switch(ev.touches.length){
+                 case 1: oneTouch(ev);
+                      if(ev.touches[0].pageX <= cvs.width/2){
+                          touchObjL = ev.touches[0];
+                          distLX = 0;startLX =0;
+                          console.log("LX Released ");
+                      }else{
+                          touchObjR = ev.touches[0];
+                          distRX = 0;startRX = 0;
+                          console.log("RX Released ");
+                      } 
+                      break;
+                 case 2: twoTouch(ev); 
+                      touchObjL = ev.touches[0];
+                      distLX = 0;startLX = 0;
+
+                      touchObjR = ev.touches[1];
+                      distRX = 0; startRX = 0;
+                          
+                      console.log("Both Released");
+                      break;
+            }
+        }
+
+        function oneTouch(ev){
+            console.log(ev.touches[0]);
+            console.log(ev.touches[0].pageX);
+        }
+
+        function twoTouch(ev){
+            console.log(ev.touches[0].pageX + ", " + ev.touches[1].pageX);
+        }
+
+        cvs.addEventListener("touchstart",touchStart, false);
+        cvs.addEventListener("touchmove", touchMove, false);
+        cvs.addEventListener("touchend",touchEnd, false);
+        resizeCanvas();
+										window.addEventListener("resize",resizeCanvas);
+
+										drawScreen();
+    </script>
+</html>
