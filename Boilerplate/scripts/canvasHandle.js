@@ -39,27 +39,28 @@ var drawTouchInput = function(){
 }
 var drawScreen = function(){
 	ctx.fillStyle = "black";
-		ctx.clearRect(0,0,cvs.width,cvs.height);
+	ctx.clearRect(0,0,cvs.width,cvs.height);
 	ctx.fillRect(0,0,cvs.width,cvs.height);
 	//drawCircle(r,xA,yA);
 	//drawCircle(r,xA + (Math.sin(a)*l), yA + (Math.cos(a)*l));
 	a += 0.1;
-			drawTouchInput();
+	drawTouchInput();
 	window.requestAnimationFrame(drawScreen);
 }
 
 var gainFocus = function(){
-
+	console.log("Gained focus at: " + Date.now());
 }
 
 var loseFocus = function(){
-	
+	console.log("Lost focus at: " + Date.now());	
 }
 
 resizeCanvas();
 
 window.addEventListener('resize',resizeCanvas);
-window.addEventListener('focusin', gainFocus);
-window.addEventListener('focusout', loseFocus);
+window.addEventListener('focus', gainFocus, false);
+window.addEventListener('blur', loseFocus);
 
-drawScreen();
+//drawScreen();	// drawScreen is called here for testing purposes
+		//	We are going to let the fsm determine what needs to be drawn
