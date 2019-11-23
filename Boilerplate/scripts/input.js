@@ -1,8 +1,13 @@
 // 	The input system encapsulates events to feed them to the right fsm states
+//	The input system 'could' be designed as a singleton class that communicates with the fsm controller
 //	Keyboard Input
 
 //	Canvas Dependancy
 var cvs = null;
+
+var input = (function() {
+
+}) ();
 var keyLogging = true;
 
 var enableKeyLogging = function(value){
