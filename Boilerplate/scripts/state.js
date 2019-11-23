@@ -2,34 +2,6 @@
 //input.js
 //canvasHandle.js
 
-//FSM-Core
-var fsm = (function () {
-	var _currentState = null;
-	var _stateList = [];
-	
-	//	Called when states need to pass info to fsm
-	function _stateCallback(message) {
-		
-	};
-	
-	function _setState() {
-		
-	};
-	
-	function _init() {
-		_stateList.push( new StartState( _stateCallback );
-		_stateList.push( new PlayState( _stateCallback );
-	};
-	
-	function _update() {
-		
-	};
-	
-	return {
-		init: _init
-	};
-}) ();
-
 //	Prototype state definition
 function State(name, callback){
 	//	Define global state data
@@ -60,6 +32,7 @@ StartState.prototype = Object.create( State.prototype );
 StartState.prototype.onStart = function() {
 	State.prototype.onStart.call( this);
 	console.log("Starting StartState");
+	//	Register compononents needed for start state
 }
 
 StartState.prototype.onUpdate = function() {
@@ -68,6 +41,7 @@ StartState.prototype.onUpdate = function() {
 
 StartState.prototype.onStop = function() {
 	State.prototype.onStop.call( this);
+	console.log("Stopping StartState");
 }
 
 //	PlayState definition
@@ -80,6 +54,7 @@ PlayState.prototype = Object.create( State.prototype );
 
 PlayState.prototype.onStart = function() {
 	State.prototype.onStart.call( this);
+	console.log("Starting PlayState");
 }
 
 PlayState.prototype.onUpdate = function() {
@@ -88,4 +63,5 @@ PlayState.prototype.onUpdate = function() {
 
 PlayState.prototype.onStop = function() {
 	State.prototype.onStop.call( this);
+	console.log("Starting PlayState");
 }
