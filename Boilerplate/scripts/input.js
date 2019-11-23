@@ -51,26 +51,36 @@ function mouseClick(e){
 	var button = e.button || e.which;
 	var x = e.clientX; // or pageX
 	var y = e.clientY; // or pageY
+	if(mouseLogging == true){
+		console.log("mouseClick " + e.clientX + ", " + e.clientY); 
+	}
 }
 
 function mouseDown(e){
 	var button = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
-	console.log("mouseDown " + e.clientX + ", " + e.clientY); 
+	if(mouseLogging == true){
+		console.log("mouseDown " + e.clientX + ", " + e.clientY); 
+	}
+	
 }
 
 function mouseUp(e){
 	var button = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
-	console.log("mouseUp " + e.clientX + ", " + e.clientY);
+	if(mouseLogging == true){
+		console.log("mouseUp " + e.clientX + ", " + e.clientY); 
+	}
 }
 
 function mouseMove(e){
 	var dX = e.movementX;
 	var dY = e.movementY;
-	console.log("mouseMove " + e.clientX + ", " + e.clientY);
+	if(mouseLogging == true){
+		console.log("mouseMove " + e.movementX + ", " + e.movementY); 
+	}
 }
 
 var setMouseEventListener = function( func, type){
