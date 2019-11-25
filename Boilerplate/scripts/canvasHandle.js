@@ -1,3 +1,13 @@
+//	This file is preceded by...
+//input.js
+
+//	The Canvas handle is intended to encapsulate the canvas and 2d context
+//	When indivdual states need to render something, that object is registered here
+//	There should be 3 different entity types:
+//	Rect-based entities
+//	Text-based entities
+//	Arc-based entities
+
 cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 	
@@ -23,9 +33,20 @@ var resizeCanvas = function(){
 	yB = cvs.height/3;
 }
 
+
+
 var drawCircle = function(ra, x, y){
 	ctx.fillStyle = "white";
 	ctx.fillRect(x - (ra/2), y - (ra/2), ra, ra);
+}
+
+// Methods intended for use with other objects/states
+var drawArc = function(x, y, r, sAngle, eAngle, counterClock){
+	ctx.arc(x, y, r, sAngle, eAngle, counterClock);
+}
+
+var drawRect = function(x, y, w, h, style){
+	ctx.fillRect(x,y,w,h);
 }
 var drawTouchInput = function(){
 	if(distLX < 0 || distLX > 0){
