@@ -17,9 +17,7 @@ var l = 100;
 var xA = cvs.width/3;
 var yA = cvs.height/3;
 var xB = 2 * (cvs.width/3);
-var yB = cvs.height/3;
-	
-	
+var yB = cvs.height/3;	
 	
 var resizeCanvas = function(){
 	cvs.style.width = window.innerWidth;
@@ -33,7 +31,13 @@ var resizeCanvas = function(){
 	yB = cvs.height/3;
 }
 
+var canvasWidth = function(){
+	return cvs.width;
+}
 
+var canvasHeight = function(){
+	return cvs.height;
+}
 
 var drawCircle = function(ra, x, y){
 	ctx.fillStyle = "white";
@@ -45,9 +49,57 @@ var drawArc = function(x, y, r, sAngle, eAngle, counterClock){
 	ctx.arc(x, y, r, sAngle, eAngle, counterClock);
 }
 
-var drawRect = function(x, y, w, h, style){
+// Draw Rect with style
+var fillRectStyle = function(x, y, w, h, style){
+	ctx.fillStyle = style;
 	ctx.fillRect(x,y,w,h);
 }
+
+// Draw Rect with current style
+var fillRect = function(x, y, w, h){
+	ctx.fillRect(x,y,w,h);
+}
+
+var fillText = function(x, y, text, font){
+	ctx.font = font || "30px Arial";
+	ctx.fillText( text, x, y);
+}
+
+var text = function( x, y, text ){
+	ctx.fillText( text, x, y );
+}
+
+var fillTextStyle = function(x, y, text, font, style){
+	ctx.fillStyle = style;
+	ctx.font = font || "30px Arial";
+	ctx.fillText( text, x, y);
+}
+
+var strokeText = function(x, y, text, font){
+	ctx.font = font || "30px Arial";
+	ctx.strokeText( text, x, y);
+}
+
+var strokeTextStyle = function(x, y, text, font, style){
+	ctx.strokeStyle = style;
+	ctx.font = font || "30px Arial";
+	ctx.strokeText( text, x, y);
+}
+
+// Set FillStyle
+var setFillStyle = function( style ){
+	ctx.fillStyle = style;
+}
+
+// Set Stroke style
+var setStrokeStyle = function( style ){
+	ctx.strokeStyle = style;
+}
+
+var setFont = function( font ){
+	ctx.font = font;
+}
+
 var drawTouchInput = function(){
 	if(distLX < 0 || distLX > 0){
 		 ctx.fillStyle = "red";
@@ -62,11 +114,7 @@ var drawScreen = function(){
 	ctx.fillStyle = "black";
 	ctx.clearRect(0,0,cvs.width,cvs.height);
 	ctx.fillRect(0,0,cvs.width,cvs.height);
-	//drawCircle(r,xA,yA);
-	//drawCircle(r,xA + (Math.sin(a)*l), yA + (Math.cos(a)*l));
-	a += 0.1;
-	drawTouchInput();
-	window.requestAnimationFrame(drawScreen);
+	//window.requestAnimationFrame(drawScreen);
 }
 
 var gainFocus = function(){
@@ -76,8 +124,6 @@ var gainFocus = function(){
 var loseFocus = function(){
 	console.log("Lost focus at: " + Date.now());	
 }
-
-resizeCanvas();
 
 window.addEventListener('resize',resizeCanvas);
 window.addEventListener('focus', gainFocus, false);

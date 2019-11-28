@@ -6,8 +6,19 @@
 var cvs = null;
 
 var input = (function() {
+	var _keyInputBuffer = [];
+	var _mouseInputBuffer = [];
+	var _touchInputBuffer = [];
 
+	function _clearInputBuffer(type){
+		
+	}
+
+	function _registerInputListener(type, func){
+
+	}
 }) ();
+
 var keyLogging = true;
 
 var enableKeyLogging = function(value){

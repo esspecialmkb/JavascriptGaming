@@ -8,14 +8,21 @@ var fsm = (function () {
 	var _currentState = null;
 	var _stateList = [];
 	var _animationFrameId = null;
+	var eventList = [];
 	
 	//	Called when states need to pass info to fsm
 	function _stateCallback(message) {
 		
 	};
+
+	function _getInput() {
+		
+	};
 	
 	function _setState(state) {
-		_currentState.onStop();
+		if( _currentState != null ){
+			_currentState.onStop();
+		}
 		_currentState = state;
 		_currentState.onStart();
 	};
@@ -24,10 +31,16 @@ var fsm = (function () {
 		_stateList.push( new StartState( _stateCallback ));
 		_stateList.push( new PlayState( _stateCallback ));
 		_setState(_stateList[0] );
+
+		_registerAnimationFrame();
 	};
 	
 	function _update() {
-		_currentState.onUpdate();
+		if( _currentState != null ){
+			_currentState.onUpdate();
+			//drawScreen();
+		}
+		
 	};
 
 	function _registerAnimationFrame(){
