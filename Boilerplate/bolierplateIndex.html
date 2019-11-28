@@ -10,9 +10,19 @@
         	<canvas style="width:100%; height:100%;"id="canvas"></canvas>
     	</body>
     	<script type="text/javascript" src="scripts/input.js"></script>
+	<script type="text/javascript" src="scripts/entity.js"></script>
 	<script type="text/javascript" src="scripts/canvasHandle.js"></script>
 	<script type="text/javascript" src="scripts/state.js"></script>
+	<script type="text/javascript" src="scripts/startState.js"></script>
 	<script type="text/javascript" src="scripts/stateMachine.js"></script>
     	<!-- <script type="text/javascript" src="scripts/touchHandle.js"></script> -->
+	<script type="text/javascript">
+		window.onload = function () {
+			//	This serves as the main starting point in the script
+			resizeCanvas(); // Called from canvasHandle.js
+			fsm.init();
+			fsm.update();
+		};
+	</script>
 	
 </html>
