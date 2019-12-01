@@ -39,6 +39,85 @@
 
                 // create a FreeCamera, and set its position to (x:0, y:5, z:-10)
                 var camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5,-10), scene);
+				camera.inputs.clear();
+				
+				// camera input class
+				var CamInput = function() {
+					this._keys = [];
+					this.keysLeft = [27];
+					this.keysRight = [39];
+					this.sensibility = 0.01;
+				}
+				
+				CamInput.prototype.getTypeName = function() {
+					return "CamInput";
+				};
+				
+				CamInput.prototype.getSimpleName = function() {
+					return "CInput";
+				};
+				
+				CamInput.prototype.attachControl = function( element, noPreventDefault) {
+					var _this = this;
+					if (!this._onKeyDown) {
+						element.tabindex = 1;
+						this._onKeyDown = function( evt ) {
+							if( _this.keysLeftindexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+								var index = _this._keys.indexOf(evt.keyCode);
+								if(index === -1) {
+									_this._keys.push(evt.keyCode);
+								}if( !noPreventDefault) {
+									evt.preventDefault();
+								}
+							}
+						};
+						this._onKeyUp = function( evt ) {
+							if( _this.keysLeftindexOf(evt.keyCode) !== -1 || _this.keysRight.indexOf(evt.keyCode) !== -1) {
+								var index = _this._keys.indexOf(evt.keyCode);
+								if(index >= 0) {
+									_this._keys.splice(index, 1);
+								}if( !noPreventDefault) {
+									evt.preventDefault();
+								}
+							}
+						};
+						
+						element.addEventListener('keydown', this._onKeyDown, false);
+						element.addEventListener('keyup', this._onKeyUp, false);
+						BABYLON.Tools.RegisterTopRootEvents(canvas, [{name: "blur", handler: this._onLostFocus}]);
+					}
+				};
+				
+				CamInput.prototype.detachControl = function( element ) {
+					if(this._onKeyDown) {
+						element.removeEventListener('keydown', this._onKeyDown);
+						element.removeEventListener('keyup', this._onKeyUp);
+						BABYLON.Tools.UngisterTopRootEvents(canvas, [{name: "blur", handler: this._onLostFocus}]);
+						
+						this._keys = [];
+						this._onKeyDown = null;
+						this._onKeyUp = null;
+					}
+				};
+				
+				CamInput.prototype.checkInputs = function() {
+					if(this._onKeyDown) {
+						var camera = this.camera;
+						//keyboard
+						console.log("Key Down: " + this._keys[0]);
+						for(var index = 0; index < this._keys.length; index++) {
+							var keyCode = this._keys[index];
+							if(this.keysLeft.indexOf(keyCode) !== -1) {
+								camera.cameraRotation.y += this.sensibility;
+							}else if(this.keysRight.indexOf(keyCode) !== -1) {
+								camera.cameraRotation.y -= this.sensibility;
+							}
+						}
+					}
+				};
+				
+				// add the input controller to the camera inputs
+				//camera.inputs.add(new CamInput() );
 
                 // target the camera to scene origin
                 camera.setTarget(BABYLON.Vector3.Zero());
@@ -73,6 +152,18 @@
             // the canvas/window resize event handler
             window.addEventListener('resize', function(){
                 engine.resize();
+            });
+			window.addEventListener('keydown', function(e){
+				var camera = scene.activeCamera;
+				//console.log("Key Down: " + e.keyCode );
+				//console.log("Camera rot y: " + camera.cameraRotation.y );
+                if(e.keyCode === 37) {
+					camera.position.x -= 0.01* 2;
+					//camera.cameraRotation.y += 0.01;
+				}else if(e.keyCode === 39) {
+					camera.position.x += 0.01 * 2;
+					//camera.cameraRotation.y -= 0.01;
+				}
             });
         });
     </script>
