@@ -1,65 +1,50 @@
-//	This file is preceded by...
-//input.js
-//entity.js
-//canvasHandle.j
-
-//	StartState definition
-//  The start state will be the prototype of the main menu
-function StartState(callback){
+//	PlayState definition
+function PlayState(callback){
 	State.call(this, name, callback);
-
 	//	Define state-specific data
 	this.firstRun = true;
 	this.screenWidth = 0;
 	this.screenHeight = 0;
-	//  The main menu will show a button in the center of the canvas
-	this.textFont = ["30px Arial", "30px Comic Sans MS"];
-	this.playButton = {
-		x: 0,
-		y: 0,
-		w: 0,
-		h: 0
-	};
-	//  The button will have the text 'play'
-	//  This button needs to trigger the play state when clicked
-	//  The main menu should also have title text
+	
+	this.map = new Map( "demo", 0,0, 64, 64 );
+	
 }
 
-StartState.prototype = Object.create( State.prototype );
+PlayState.prototype = Object.create( State.prototype );
 
-StartState.prototype.onKeyDown = function( e ) {
+PlayState.prototype.onKeyDown = function( e ) {
 	var x = e.which || e.keyCode;
 }
 
-StartState.prototype.onKeyUp = function( e ) {
+PlayState.prototype.onKeyUp = function( e ) {
 	var x = e.which || e.keyCode;
 }
 
-StartState.prototype.onMouseClick = function( e) {
+PlayState.prototype.onMouseClick = function( e) {
 	var b = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
 }
 
-StartState.prototype.onMouseDown = function( e) {
+PlayState.prototype.onMouseDown = function( e) {
 	var b = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
 }
 
-StartState.prototype.onMouseUp = function( e) {
+PlayState.prototype.onMouseUp = function( e) {
 	var b = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
 }
 
-StartState.prototype.onMouseMove = function( e) {
+PlayState.prototype.onMouseMove = function( e) {
 	var b = e.button || e.which;
 	var x = e.clientX;
 	var y = e.clientY;
 }
 
-StartState.prototype.onTouchStart = function( e ) {
+PlayState.prototype.onTouchStart = function( e ) {
 	var t = e.changedTouches;
 	
 	switch(t.length){
@@ -74,7 +59,7 @@ StartState.prototype.onTouchStart = function( e ) {
 	}
 }
 
-StartState.prototype.onTouchMove = function( e ) {
+PlayState.prototype.onTouchMove = function( e ) {
 	var t = e.changedTouches;
 	
 	switch(t.length){
@@ -89,7 +74,7 @@ StartState.prototype.onTouchMove = function( e ) {
 	}
 }
 
-StartState.prototype.onTouchEnd = function( e ) {
+PlayState.prototype.onTouchEnd = function( e ) {
 	var t = e.changedTouches;
 	
 	switch(t.length){
@@ -104,17 +89,12 @@ StartState.prototype.onTouchEnd = function( e ) {
 	}
 }
 
-StartState.prototype.onStart = function() {
+PlayState.prototype.onStart = function() {
 	State.prototype.onStart.call( this);
-	console.log("Starting StartState");
-	//	Register compononents needed for start state
+	console.log("Starting PlayState");
+	
 	this.screenWidth = canvasWidth();
 	this.screenHeight = canvasHeight();
-
-	this.playButton.x = this.screenWidth / 3;
-	this.playButton.y = (this.screenHeight / 5) * 3;
-	this.playButton.w = this.screenWidth / 3; 
-	this.playButton.h = 50;
 	
 	//	Register input listeners
 	window.addEventListener('keydown', this.onKeyDown );
@@ -130,26 +110,21 @@ StartState.prototype.onStart = function() {
 	window.addEventListener('touchend', this.onTouchEnd, false);
 }
 
-StartState.prototype.onUpdate = function() {
+PlayState.prototype.onUpdate = function() {
 	State.prototype.onUpdate.call( this);
 	if(this.firstRun){ 
-		console.log("Updating StartState");
+		console.log("Updating PlayState");
 		this.firstRun = false;
 	}
-
 	// We only need to process input, handle gui logic, and render
 
 	// Render
 	clearCanvasStyle("black");
-
-	// Play Button
-	fillRectStyle( this.playButton.x, this.playButton.y, this.playButton.w, this.playButton.h, "Green");
-	fillTextStyle( this.playButton.x + (this.playButton.w/4), this.playButton.y + 35, "Play Demo", "30px Arial", "Black");
 }
 
-StartState.prototype.onStop = function() {
+PlayState.prototype.onStop = function() {
 	State.prototype.onStop.call( this);
-	console.log("Stopping StartState");
+	console.log("Starting PlayState");
 	
 	//	Remove input listeners
 	window.removeEventListener('keydown', this.onKeyDown );
@@ -163,19 +138,4 @@ StartState.prototype.onStop = function() {
 	window.removeEventListener('touchstart', this.onTouchStart, false);
 	window.removeEventListener('touchmove', this.onTouchMove, false);
 	window.removeEventListener('touchend', this.onTouchEnd, false);
-}
-
-StartState.prototype.onMessage = function( type, data ) {
-	switch(type){
-		case 'resize':
-			break;
-		case 'keydown':
-			break;
-		case 'keyup':
-			break;
-		case 'mousemove':
-			break;
-		default:
-			State.prototype.onMessage.call(this, type, data);
-	}
 }

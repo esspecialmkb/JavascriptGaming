@@ -1,4 +1,4 @@
-function Entity(name) {
+function Entity(name, x, y, w, h) {
 	this.name = name;
 	this.x = 0;
 	this.y = 0;
@@ -8,20 +8,22 @@ function Entity(name) {
 	this.type = 0;
 }
 
-Entity.prototype.update = function() {}
+Entity.prototype.update = function( dt ) {}
 
 Entity.prototype.setPosition = function(x,y) {
 	this.x = x;
 	this.y = y;
 }
 
-function jsButton(name) {
-	Entity.call(this,name);
+function jsButton(name, x, y, w, h) {
+	Entity.call(this,name, x, y, w, h);
 	this.eventProc = null;
 }
 
 jsButton.prototype = Object.create(Entity.prototype);
 
-jsButton.prototype.update = function() {}
+jsButton.prototype.update = function( dt ) {}
 
-jsButton.prototype
+jsButton.prototype.setPosition = function(x,y) {
+	Entity.prototype.setPosition.call(this, x, y);
+}

@@ -8,7 +8,7 @@
 //	Text-based entities
 //	Arc-based entities
 
-cvs = document.getElementById("canvas");
+var cvs = document.getElementById("canvas");
 var ctx = cvs.getContext("2d");
 	
 var a = 0;
@@ -37,6 +37,15 @@ var canvasWidth = function(){
 
 var canvasHeight = function(){
 	return cvs.height;
+}
+
+var clearCanvas = function() {
+	ctx.fillRect(0,0,cvs.width,cvs.height);
+}
+
+var clearCanvasStyle = function(style) {
+	setFillStyle( style );
+	clearCanvas();
 }
 
 var drawCircle = function(ra, x, y){
