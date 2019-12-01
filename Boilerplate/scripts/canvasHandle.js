@@ -60,8 +60,8 @@ var drawArc = function(x, y, r, sAngle, eAngle, counterClock){
 
 // Draw Rect with style
 var fillRectStyle = function(x, y, w, h, style){
-	ctx.fillStyle = style;
-	ctx.fillRect(x,y,w,h);
+	setFillStyle( style );
+	fillRect(x,y,w,h);
 }
 
 // Draw Rect with current style
@@ -69,6 +69,17 @@ var fillRect = function(x, y, w, h){
 	ctx.fillRect(x,y,w,h);
 }
 
+// Draw Stroked Rect
+var strokeRect = function(x, y, w, h){
+	ctx.strokeRect(x,y,w,h);
+}
+
+var strokeRectStyle = function(x, y, w, h, style){
+	ctx.strokeStyle = style;
+	ctx.strokeRect(x,y,w,h);
+}
+
+// Draw Filled Text
 var fillText = function(x, y, text, font){
 	ctx.font = font || "30px Arial";
 	ctx.fillText( text, x, y);
@@ -84,6 +95,7 @@ var fillTextStyle = function(x, y, text, font, style){
 	ctx.fillText( text, x, y);
 }
 
+// Draw Stroked Text
 var strokeText = function(x, y, text, font){
 	ctx.font = font || "30px Arial";
 	ctx.strokeText( text, x, y);

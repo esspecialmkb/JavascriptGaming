@@ -6,12 +6,13 @@ function PlayState(callback){
 	this.screenWidth = 0;
 	this.screenHeight = 0;
 	
-	this.map = new Map( "demo", 0,0, 64, 64 );
+	this.map = null;
 	
 }
 
 PlayState.prototype = Object.create( State.prototype );
 
+//	Keyboard input handlers
 PlayState.prototype.onKeyDown = function( e ) {
 	var x = e.which || e.keyCode;
 }
@@ -20,6 +21,7 @@ PlayState.prototype.onKeyUp = function( e ) {
 	var x = e.which || e.keyCode;
 }
 
+//	Mouse input handlers
 PlayState.prototype.onMouseClick = function( e) {
 	var b = e.button || e.which;
 	var x = e.clientX;
@@ -44,6 +46,7 @@ PlayState.prototype.onMouseMove = function( e) {
 	var y = e.clientY;
 }
 
+//	Touch input handlers
 PlayState.prototype.onTouchStart = function( e ) {
 	var t = e.changedTouches;
 	
@@ -89,12 +92,15 @@ PlayState.prototype.onTouchEnd = function( e ) {
 	}
 }
 
+//	State initializer
 PlayState.prototype.onStart = function() {
 	State.prototype.onStart.call( this);
 	console.log("Starting PlayState");
 	
 	this.screenWidth = canvasWidth();
 	this.screenHeight = canvasHeight();
+
+	this.map = new Map( "demo", 0,0, 64, 64 );
 	
 	//	Register input listeners
 	window.addEventListener('keydown', this.onKeyDown );

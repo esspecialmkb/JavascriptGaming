@@ -20,7 +20,7 @@ var fsm = (function () {
 	};
 	
 	function _setState(state) {
-		if( _currentState != null ){
+		if( _currentState !== null ){
 			_currentState.onStop();
 		}
 		_currentState = state;
@@ -28,31 +28,20 @@ var fsm = (function () {
 	};
 	
 	function _init() {
-		_stateList.push( new StartState( _stateCallback ));
-		_stateList.push( new PlayState( _stateCallback ));
+		_stateList.push( new BetaStartState( "start", _stateCallback ));
+		//_stateList.push( new PlayState( "play", _stateCallback ));
 		_setState(_stateList[0] );
 
-		_registerAnimationFrame();
 	};
 	
 	function _update() {
-		if( _currentState != null ){
+		if( _currentState !== null ){
 			_currentState.onUpdate();
 			//drawScreen();
 		}
 		
+		window.requestAnimationFrame(_update);		
 	};
-
-	function _registerAnimationFrame(){
-		_animationFrameID = window.requestAnimationFrame(_update);
-	}
-
-	function _deregisterAnimationFrame(){
-		if(_animationFrameId){
-			window.cancelAnimationFrame(_animationFrameId);
-			_animationFrameId = null;
-		}
-	}
 	
 	return {
 		stateCallback: _stateCallback,
@@ -62,7 +51,7 @@ var fsm = (function () {
 	};
 }) ();
 
-fsm.init();
+//fsm.init();
 
 // Init is called first, to prepare the state machine and set initial state
 // The update method gets called once per-frame, updating the current state

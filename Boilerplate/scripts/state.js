@@ -21,3 +21,18 @@ State.prototype.onStop = function() {}
 
 //	Called when a message or event is received
 State.prototype.onMessage = function(message) {}
+
+//---------------------------------------------
+//	Testing alternate class implementation
+class BaseState {
+	constructor(name, callback){
+		this.name = name;
+		this.messageCallback = callback;
+		this.firstRun = false;
+	}
+
+	onStart() {}
+	onUpdate() {}
+	onStop() {}
+	onMessage(message) {}
+}
