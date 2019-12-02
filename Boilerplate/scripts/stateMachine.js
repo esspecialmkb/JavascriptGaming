@@ -28,7 +28,7 @@ var fsm = (function () {
 	};
 	
 	function _init() {
-		_stateList.push( new BetaStartState( "start", _stateCallback ));
+		_stateList.push( new StartState( "start", _stateCallback ));
 		//_stateList.push( new PlayState( "play", _stateCallback ));
 		_setState(_stateList[0] );
 
