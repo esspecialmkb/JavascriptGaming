@@ -3,120 +3,18 @@
 //entity.js
 //canvasHandle.js
 
-//	Alternate StartState implementation
-class BetaStartState extends BaseState {
-	constructor(name, callback) {
-		super.constructor(name, callback);
-
-		this.mouseClick = true;
-		this.mouseX = 0;
-		this.mouseY = 0;
-	}
-
-	onKeyDown( e ) {
-		var key = e.which || e.keyCode;
-	}
-
-	onKeyUp( e ) {
-		var key = e.which || e.keyCode;
-	}
-
-	onMouseClick( e ) {
-		var b = e.button || e.which;
-		this.mouseX = e.clientX;
-		this.mouseY = e.clientY;
-		this.mouseClick = true;
-		//console.log("Mouse Click at: " + this.mouseX + ", " + this.mouseY);
-	}
-
-	onMouseMove( e ) {
-		this.mouseX = e.clientX;
-		this.mouseY = e.clientY;
-		this.mouseClick = true;
-		//console.log("Mouse Move at: " + this.mouseX + ", " + this.mouseY);
-	}
-
-	onStart() {
-		console.log("Starting StartState");
-		//	Register compononents needed for start state
-		this.screenWidth = canvasWidth();
-		this.screenHeight = canvasHeight();
-
-		this.playButton.x = this.screenWidth / 3;
-		this.playButton.y = (this.screenHeight / 5) * 3;
-		this.playButton.w = this.screenWidth / 3; 
-		this.playButton.h = 50;
-		this.playButton.text = "Play Demo";
-		this.playButton.active = false;
-		
-		//	Register input listeners
-		window.addEventListener('keydown', this.onKeyDown );
-		window.addEventListener('keyup', this.onKeyUp );
-		
-		window.addEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
-		//window.addEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
-		//window.addEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
-		window.addEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
-		
-		//window.addEventListener('touchstart', this.onTouchStart, false);
-		//window.addEventListener('touchmove', this.onTouchMove, false);
-		//window.addEventListener('touchend', this.onTouchEnd, false);
-	}
-
-	onUpdate() {
-		if(this.firstRun){ 
-			console.log("Updating StartState");
-			this.firstRun = false;
-		}
-	
-		// We only need to process input, handle gui logic, and render
-	
-		// Render
-		clearCanvasStyle("black");
-	
-		// Play Button
-		fillRectStyle( this.playButton.x, this.playButton.y, this.playButton.w, this.playButton.h, "Green");
-		fillTextStyle( this.playButton.x + (this.playButton.w/4), this.playButton.y + 35, this.playButton.text, this.textFont[0], "Black");
-		
-		// GUI logic
-		// Check the mouse position
-		if( 	(this.mouseX > this.playButton.x) && 
-			(this.mouseX < (this.playButton.x + this.playButton.w)) &&
-		    	(this.mouseY > this.playButton.y) && 
-			(this.mouseY < (this.playButton.y + this.playButton.h)) ) {
-			// Change the button's render color if the mouse is hovering over it
-			
-			strokeRectStyle( this.playButton.x, this.playButton.y, this.playButton.w, this.playButton.h, "White");
-		}
-		if(this.debugToggle){
-			console.log("Mouse: " + this.mX + ", " + this.mY + ". Button: " + this.playButton.x + ", " + this.playButton.y);
-		}
-	}
-
-	onStop() {
-		console.log("Stopping StartState");
-	
-		//	Remove input listeners
-		window.removeEventListener('keydown', this.onKeyDown );
-		window.removeEventListener('keyup', this.onKeyUp );
-		
-		window.removeEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
-		//window.removeEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
-		//window.removeEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
-		window.removeEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
-		
-		//window.removeEventListener('touchstart', this.onTouchStart, false);
-		//window.removeEventListener('touchmove', this.onTouchMove, false);
-		//window.removeEventListener('touchend', this.onTouchEnd, false);
-	}
-
-	onMessage(message) {}
-}
 
 //	StartState definition
-//  The start state will be the prototype of the main menu
+//  The start state will now be it's own object
+//  The mouse position check in the update loop works with the mouse x and y params external to the object
+var startStateMX = -1;
+var startStateMY = -1;
+var startStateMouse = false;
+
 function StartState(callback){
-	State.call(this, name, callback);
+	//State.call(this, name, callback);
+	this.name = name;
+	this.callback = callback;
 
 	//	Define state-specific data
 	this.firstRun = true;
@@ -142,11 +40,9 @@ function StartState(callback){
 	this.debugToggle = false;
 }
 
-StartState.prototype = Object.create( State.prototype );
-
 StartState.prototype.updateMouse = function(x, y) {
-	this.mX = x;
-	this.mY = y;
+	startStateMX = x;
+	startStateMY = y;
 }
 
 //	Keyboard handlers
@@ -155,45 +51,33 @@ StartState.prototype.onKeyDown = function( e ) {
 }
 
 StartState.prototype.onKeyUp = function( e ) {
-	var x = e.which || e.keyCode;
-	if( x == 32 ){
-		;
-		if(this.debugToggle == true){
-			this.debugToggle = false;
-		}else{ this.debugToggle = true; }
-
-		console.log("Debug Toggle: " + this.debugToggle)
-	}
-	
+	var x = e.which || e.keyCode;	
 }
 
 //	Mouse handlers
 StartState.prototype.onMouseClick = function( e ) {
 	var b = e.button || e.which;
-	//this.mX = e.clientX;
-	//this.mY = e.clientY;
-	this.updateMouse(e.clientX, e.clientY);
-	this.mouseClick = true;
-	console.log("Mouse Click at: " + this.mX + ", " + this.mY);
+	startStateMX = e.clientX;
+	startStateMY = e.clientY;
+	startStateMouse = true;
 }
 
 StartState.prototype.onMouseDown = function( e) {
 	var b = e.button || e.which;
-	var x = e.clientX;
-	var y = e.clientY;
+	startStateMX = e.clientX;
+	startStateMY = e.clientY;
 }
 
 StartState.prototype.onMouseUp = function( e) {
 	var b = e.button || e.which;
-	var x = e.clientX;
-	var y = e.clientY;
+	startStateMX = e.clientX;
+	startStateMY = e.clientY;
 }
 
 StartState.prototype.onMouseMove = function( e) {
 	var b = e.button || e.which;
-	mouseX = e.clientX;
-	mouseY = e.clientY;
-	//console.log("Mouse Move: " + this.mouseX + ", " + this.mouseY);
+	startStateMX = e.clientX;
+	startStateMY = e.clientY;
 }
 
 //	Touch handlers
@@ -243,7 +127,6 @@ StartState.prototype.onTouchEnd = function( e ) {
 }
 
 StartState.prototype.onStart = function() {
-	State.prototype.onStart.call( this);
 	console.log("Starting StartState");
 	//	Register compononents needed for start state
 	this.screenWidth = canvasWidth();
@@ -268,10 +151,14 @@ StartState.prototype.onStart = function() {
 	//window.addEventListener('touchstart', this.onTouchStart, false);
 	//window.addEventListener('touchmove', this.onTouchMove, false);
 	//window.addEventListener('touchend', this.onTouchEnd, false);
+
+	// Setup external state data
+	startStateMX = -1;
+	startStateMY = -1;
+	startStateMouse = false;
 }
 
 StartState.prototype.onUpdate = function() {
-	State.prototype.onUpdate.call( this);
 	if(this.firstRun){ 
 		console.log("Updating StartState");
 		this.firstRun = false;
@@ -288,21 +175,30 @@ StartState.prototype.onUpdate = function() {
 
 	// GUI logic
 	// Check the mouse position
-	if( 	(this.mouseX > this.playButton.x) && 
-		(this.mouseX < (this.playButton.x + this.playButton.w)) &&
-	    	(this.mouseY > this.playButton.y) && 
-		(this.mouseY < (this.playButton.y + this.playButton.h)) ) {
+	// Whenever the mouse hovers over any GUI object, we should set it as the active object
+	if( 	(startStateMX > this.playButton.x) && 
+		(startStateMX < (this.playButton.x + this.playButton.w)) &&
+	    	(startStateMY > this.playButton.y) && 
+		(startStateMY < (this.playButton.y + this.playButton.h)) ) {
 		// Change the button's render color if the mouse is hovering over it
 		
 		strokeRectStyle( this.playButton.x, this.playButton.y, this.playButton.w, this.playButton.h, "White");
+
+		if( startStateMouse  === true ){ 
+			console.log("Mouse Click!");
+			startStateMouse = false;
+			// We need to ask the state machine to remove this state and start the play state
+			var message = {
+				state: 'StartState',
+				event: 'PlayStateStart'
+			}
+			fsm.stateCallback();
+		}
 	}
-	if(this.debugToggle){
-		console.log("Mouse: " + this.mX + ", " + this.mY + ". Button: " + this.playButton.x + ", " + this.playButton.y);
-	}
+	
 }
 
 StartState.prototype.onStop = function() {
-	State.prototype.onStop.call( this);
 	console.log("Stopping StartState");
 	
 	//	Remove input listeners
@@ -317,6 +213,10 @@ StartState.prototype.onStop = function() {
 	//window.removeEventListener('touchstart', this.onTouchStart, false);
 	//window.removeEventListener('touchmove', this.onTouchMove, false);
 	//window.removeEventListener('touchend', this.onTouchEnd, false);
+
+	startStateMX = null;
+	startStateMY = null;
+	startStateMouse = null;
 }
 
 StartState.prototype.onMessage = function( type, data ) {
@@ -330,6 +230,5 @@ StartState.prototype.onMessage = function( type, data ) {
 		case 'mousemove':
 			break;
 		default:
-			State.prototype.onMessage.call(this, type, data);
 	}
 }
