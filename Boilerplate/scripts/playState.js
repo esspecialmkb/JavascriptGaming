@@ -1,6 +1,6 @@
 //	PlayState definition
 function PlayState(callback){
-	State.call(this, name, callback);
+	//State.call(this, name, callback);
 	//	Define state-specific data
 	this.firstRun = true;
 	this.screenWidth = 0;
@@ -94,12 +94,12 @@ PlayState.prototype.onTouchEnd = function( e ) {
 
 //	State initializer
 PlayState.prototype.onStart = function() {
-	State.prototype.onStart.call( this);
 	console.log("Starting PlayState");
 	
 	this.screenWidth = canvasWidth();
 	this.screenHeight = canvasHeight();
-
+	
+	// The map needs to be created
 	this.map = new Map( "demo", 0,0, 64, 64 );
 	
 	//	Register input listeners
@@ -111,13 +111,12 @@ PlayState.prototype.onStart = function() {
 	window.addEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
 	window.addEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
 	
-	window.addEventListener('touchstart', this.onTouchStart, false);
-	window.addEventListener('touchmove', this.onTouchMove, false);
-	window.addEventListener('touchend', this.onTouchEnd, false);
+	//window.addEventListener('touchstart', this.onTouchStart, false);
+	//window.addEventListener('touchmove', this.onTouchMove, false);
+	//window.addEventListener('touchend', this.onTouchEnd, false);
 }
 
 PlayState.prototype.onUpdate = function() {
-	State.prototype.onUpdate.call( this);
 	if(this.firstRun){ 
 		console.log("Updating PlayState");
 		this.firstRun = false;
@@ -129,7 +128,6 @@ PlayState.prototype.onUpdate = function() {
 }
 
 PlayState.prototype.onStop = function() {
-	State.prototype.onStop.call( this);
 	console.log("Starting PlayState");
 	
 	//	Remove input listeners
