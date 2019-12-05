@@ -298,28 +298,28 @@ function BuildCharacter( scene ) {
 	
 	// Left Leg Verts (18 Vets)
 	var posLegL = [
-		leg.wU, 0, leg.d/2,		
-		leg.wU, (leg.h/2) - (leg.t/2), leg.d/2,
-		leg.wU - leg.wL, (leg.h/2) - (leg.t/2), leg.d/2,
-		leg.wU - leg.wL, 0, leg.d/2,
+		-leg.wU + leg.wL, 0, leg.d/2,		
+		-leg.wU + leg.wL, (leg.h/2) - (leg.t/2), leg.d/2,
+		-leg.wU, (leg.h/2) - (leg.t/2), leg.d/2,
+		-leg.wU, 0, leg.d/2,
 		
-		leg.wU, leg.h/2, leg.d/2,
-		leg.wU - leg.wL, leg.h/2, leg.d/2,
+		-leg.wU + leg.wL, leg.h/2, leg.d/2,
+		-leg.wU, leg.h/2, leg.d/2,
 		
-		leg.wU, (leg.h/2) + (leg.t/2), leg.d/2,
-		leg.wU, leg.h, leg.d/2,
-		leg.wU - leg.wL, leg.h, leg.d/2,
-		leg.wU - leg.wL, (leg.h/2) + (leg.t/2), leg.d/2,
+		-leg.wU + leg.wL, (leg.h/2) + (leg.t/2), leg.d/2,
+		-leg.wU + leg.wL, leg.h, leg.d/2,
+		-leg.wU, leg.h, leg.d/2,
+		-leg.wU, (leg.h/2) + (leg.t/2), leg.d/2,
 		
-		leg.wU, 0, -leg.d/2,		
-		leg.wU, (leg.h/2) - (leg.t/2), -leg.d/2,
-		leg.wU - leg.wL, (leg.h/2) - (leg.t/2), -leg.d/2,
-		leg.wU - leg.wL, 0, -leg.d/2,
+		-leg.wU + leg.wL, 0, -leg.d/2,		
+		-leg.wU + leg.wL, (leg.h/2) - (leg.t/2), -leg.d/2,
+		-leg.wU, (leg.h/2) - (leg.t/2), -leg.d/2,
+		-leg.wU, 0, -leg.d/2,
 		
-		leg.wU, (leg.h/2), -leg.d/2,
-		leg.wU, leg.h, -leg.d/2,
-		leg.wU - leg.wL, leg.h, -leg.d/2,
-		leg.wU - leg.wL, (leg.h/2), -leg.d/2
+		-leg.wU + leg.wL, (leg.h/2), -leg.d/2,
+		-leg.wU + leg.wL, leg.h, -leg.d/2,
+		-leg.wU, leg.h, -leg.d/2,
+		-leg.wU, (leg.h/2), -leg.d/2
 	];
 	
 	var indLegL = [
@@ -379,34 +379,40 @@ function BuildCharacter( scene ) {
 	];
 	
 	var colLegL = [
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1,
-		0,0,1,1
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1,
+		1,0,1,1
 	];
 	
 	var positions = ConcatData( posPel, posTor );
 	positions = ConcatData( positions, posLegR );
+	positions = ConcatData( positions, posLegL );
+	
 	//console.log("positions: " + positions );
 	var indices = ConcatIndices( indPel, indTor, posPel.length/3 );
 	indices = ConcatIndices( indices, indLegR, (posPel.length/3) + (posTor.length/3));
+	indices = ConcatIndices( indices, indLegL, (posPel.length/3) + (posTor.length/3) + (posLegR.length/3));
+	
 	console.log("indices: " + indices );
 	var colors = ConcatData( colPel, colTor );
 	colors = ConcatData( colors, colLegR );
+	colors = ConcatData( colors, colLegL );
+	
 	var normals = [];
 	
 	var vertData = new BABYLON.VertexData();
