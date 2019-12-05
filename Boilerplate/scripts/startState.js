@@ -192,7 +192,7 @@ StartState.prototype.onUpdate = function() {
 				state: 'StartState',
 				event: 'PlayStateStart'
 			}
-			fsm.stateCallback();
+			fsm.stateCallback(message);
 		}
 	}
 	

@@ -1,4 +1,10 @@
 //	PlayState definition
+
+var mapTiles = [];
+var mapTileSize = 40;
+var mapWidth = 10;
+var mapHeight = 10;
+
 function PlayState(callback){
 	//State.call(this, name, callback);
 	//	Define state-specific data
@@ -100,7 +106,9 @@ PlayState.prototype.onStart = function() {
 	this.screenHeight = canvasHeight();
 	
 	// The map needs to be created
-	this.map = new Map( "demo", 0,0, 64, 64 );
+	for( var tY = 0; tY < mapHeight; tY++ ){
+		for( var tX = 0; tX < mapWidth; tX
+	}
 	
 	//	Register input listeners
 	window.addEventListener('keydown', this.onKeyDown );

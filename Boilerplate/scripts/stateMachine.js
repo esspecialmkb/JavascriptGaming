@@ -6,13 +6,19 @@
 //FSM-Core
 var fsm = (function () {
 	var _currentState = null;
+	var _nextState = -1;
 	var _stateList = [];
 	var _animationFrameId = null;
 	var eventList = [];
 	
 	//	Called when states need to pass info to fsm
 	function _stateCallback(message) {
-		
+		switch(message.event){
+			case 'PlayStateStart':
+				break;
+			case 'Quit':
+				break;
+		}
 	};
 
 	function _getInput() {
@@ -38,6 +44,10 @@ var fsm = (function () {
 		if( _currentState !== null ){
 			_currentState.onUpdate();
 			//drawScreen();
+		}
+		if( _nextState !== -1){
+			_setState( _stateList[ _nextState ] );
+			_nextState = -1;
 		}
 		
 		window.requestAnimationFrame(_update);		
