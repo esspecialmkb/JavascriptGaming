@@ -57,7 +57,14 @@ function ConcatIndices( oldData, newData, offset ){
 
 function BuildCharacter( scene ) {
 	
-	// Torso Verts
+	var skeleton = BABYLON.Skeleton( "skel", id, scene );
+	var rootBone = BABYLON.Bone(name, skeleton, null);
+	rootBone.setPosition( new BABYLON.Vector3(0,0,0), BABYLON.Space.BONE);
+	rootBone.setRotation( new BABYLON.Vector3(0,0,0), BABYLON.Space.BONE);
+	
+	var hipBone = BABYLON.Bone(name, skeleton, rootBone);
+	
+	// Torso Verts (16)
 	var posTor = [
 		// Build torso (16 verts min)
 		torso.w/2, leg.h + pelvis.h, torso.d/2,
@@ -81,7 +88,7 @@ function BuildCharacter( scene ) {
 		-torso.w/2, leg.h  + pelvis.h + (torso.h/2) - (torso.t/2), -torso.d/2
 	];
 	
-	console.log("posTor: " + posTor ); 
+	
 	var indTor = [
 		0, 2, 1,	// Front faces
 		0, 3, 2,
@@ -144,7 +151,26 @@ function BuildCharacter( scene ) {
 		0, 1, 0, 1,
 		0, 1, 0, 1
 	];
-	// Pelvis Verts
+	
+	var matIndTor = [ 
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0
+	];
+	// Pelvis Verts (8)
 	var posPel = [
 		// Build pelvis (8 verts min)
 		pelvis.w/2, leg.h, pelvis.d/2,
@@ -158,7 +184,7 @@ function BuildCharacter( scene ) {
 		-pelvis.w/2, leg.h, -pelvis.d/2
 	];
 	
-	console.log("posPel: " + posPel );
+	
 	
 	// Pelvis Indices
 	var indPel = [
@@ -193,6 +219,16 @@ function BuildCharacter( scene ) {
 		1, 0, 0, 1
 	];
 	
+	var matIndPel = [
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0
+	];
 	// Right Leg Verts (18 Vets)
 	var posLegR = [
 		leg.wU, 0, leg.d/2,		
@@ -296,6 +332,26 @@ function BuildCharacter( scene ) {
 		0,0,1,1
 	];
 	
+	var matIndLegR = [
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 2, 0, 0,
+		3, 2, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		3, 0, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0,
+		2, 0, 0, 0
+	];
 	// Left Leg Verts (18 Vets)
 	var posLegL = [
 		-leg.wU + leg.wL, 0, leg.d/2,		
@@ -397,6 +453,27 @@ function BuildCharacter( scene ) {
 		1,0,1,1,
 		1,0,1,1,
 		1,0,1,1
+	];
+	
+	var matIndLegL = [
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		4, 5, 0, 0,
+		4, 5, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0,
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		5, 0, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0,
+		4, 0, 0, 0
 	];
 	
 	var positions = ConcatData( posPel, posTor );
