@@ -15,8 +15,10 @@ var fsm = (function () {
 	function _stateCallback(message) {
 		switch(message.event){
 			case 'PlayStateStart':
+				_nextState = 1;
 				break;
 			case 'Quit':
+				_nextState = 0;
 				break;
 		}
 	};
@@ -35,7 +37,7 @@ var fsm = (function () {
 	
 	function _init() {
 		_stateList.push( new StartState( "start", _stateCallback ));
-		//_stateList.push( new PlayState( "play", _stateCallback ));
+		_stateList.push( new PlayState( "play", _stateCallback ));
 		_setState(_stateList[0] );
 
 	};
