@@ -1,7 +1,7 @@
 //	PlayState volatile data definition
 
 var mapTiles = [];
-var mapTileSize = 40;	//	Const
+var mapTileSize = 60;	//	Const
 var mapWidth = 10;	//	Const
 var mapHeight = 10;	//	Constant
 
@@ -12,6 +12,8 @@ var playerx = 0;
 var playery = 0;
 var playervx = 0;
 var playervy = 0;
+var playerW = 0;
+var playerH = 0;
 var playerxMargin = 0;
 var playeryMargin = 0;
 
@@ -19,6 +21,10 @@ var kUp= false;
 var kDn= false;
 var kLt= false;
 var kRt= false;
+
+var textOutput = null;
+var textFont = "Arial";
+var textSize = "15px ";
 
 function PlayState(callback){
 	//	Values defined here seem to be treated as constants...
@@ -31,8 +37,8 @@ function PlayState(callback){
 	this.map = null;
 
 	//	Player Data
-	this.playerW = 15;
-	this.playerH = 30;
+	this.playerW = 22;
+	this.playerH = 45;
 	
 	//	Player Input Mask
 	this.keyUp = 38;
@@ -189,6 +195,8 @@ PlayState.prototype.onStart = function() {
 	// Setup the player ===========================================================================================
 	playerx = 5 * mapTileSize;
 	playery = 5 * mapTileSize;
+	playerW = Math.floor((mapTileSize /8 ) * 3);
+	playerH = Math.floor((mapTileSize /8 ) * 6);
 	playerxMargin = (mapTileSize - this.playerW) / 2;
 	playeryMargin = (mapTileSize - this.playerH) / 2;
 	
@@ -225,14 +233,23 @@ PlayState.prototype.drawMap = function() {
 
 // Draw The Player ============================================================================================
 PlayState.prototype.drawPlayer = function() {
-	fillRectStyle( renderOffsetX + playerx - (this.playerW/2), renderOffsetY + playery - (this.playerH/2), this.playerW, this.playerH, "Red" );
+	fillRectStyle( renderOffsetX + playerx - (playerW/2), renderOffsetY + playery - (playerH/2), playerW, playerH, "Red" );
+
+	//	Draw a debug tile collision box
+	fillRectStyle( renderOffsetX + playerx - (playerW/2), renderOffsetY + playery, playerW, playerW, "Blue" );
 }
 
 PlayState.prototype.render = function() {
 	clearCanvasStyle("black");
 	
-	this.drawMap();		
+	this.drawMap();
+	
+	this.updatePlayer();			
 	this.drawPlayer();
+
+	if(textOutput !== null){
+		fillTextStyle(0, 20, textOutput, textSize + textFont, "White");
+	}
 }
 
 PlayState.prototype.updatePlayer = function() {
@@ -241,18 +258,20 @@ PlayState.prototype.updatePlayer = function() {
 	playervx = 0;
 
 	// What tile is the player standing on?
+	var psx = playerx;
+	var psy = playery + (playerW/2);
 	var px = Math.floor(playerx / mapTileSize);
-	var py = Math.floor(playery / mapTileSize);
+	var py = Math.floor((playery + (playerW/2))/ mapTileSize);
 
 	// ... And how far from the edge of the tile are they?
 	//	playerW = 15
 	//	playerH = 30
 	//	40-15 = 25 -> 25/2 = 12.5 -> Margin X
 	//	40-30 = 10 -> 10/2 = 5    -> Margin Y
-	var marginX = (px * mapTileSize) - playerx;	//	Or playerx % mapTileSize; 
-	var marginXMax = (px * mapTileSize) - playerxMargin;
-	var marginY = (py * mapTileSize) - playery;
-	var marginYMax = (py * mapTileSize) - playeryMargin;	
+	var marX = psx % mapTileSize; 
+	var marY = psy % mapTileSize;
+
+	textOutput = "Tile Margin: " + marX + ", " + marY;
 
 	// Set move vectors according to input masks
 	if(kUp === true){ playervy = -1;}
@@ -266,27 +285,78 @@ PlayState.prototype.updatePlayer = function() {
 
 	// We will need to keep track of which tiles to check for
 	var targets = [];
+	
+	// For y movement, the x split is used to find targets
+	if( playervy !== 0 ){
+		if( marX < (playerW/2) ){
+			// Player is split between Tile(x,y) and Tile(x-1,y)
+			targets.push( {x: px + playervx, y: py + playervy } );
+			targets.push( {x: px + playervx - 1, y: py + playervy } );
+		}
 
-	if( marginX < playerxMargin ){
-		// Player is split between Tile(x,y) and Tile(x-1,y)
-		targets.push( {x: px, y: py } );
-		targets.push( {x: px - 1, y: py } );
-	}if( marginX > marginXMax ){
-		// Player is split between Tile(x,y) and Tile(x+1,y)
-		targets.push( {x: px, y: py } );
-		targets.push( {x: px - 1, y: py } );
-	}if( marginY < playeryMargin ){
-		// Player is split between Tile(x,y) and Tile(x,y-1)
-		targets.push( {x: px, y: py } );
-		targets.push( {x: px - 1, y: py } );
-	}if( marginY > marginYMax ){
-		// Player is split between Tile(x,y) and Tile(x,y+1)
-		targets.push( {x: px, y: py } );
-		targets.push( {x: px - 1, y: py } );
+		else if( marX > mapTileSize - (playerW/2) ){
+			// Player is split between Tile(x,y) and Tile(x+1,y)
+			targets.push( {x: px + playervx, y: py + playervy } );
+			targets.push( {x: px + playervx + 1, y: py + playervy } );
+		}else{
+			targets.push( {x: px + playervx, y: py + playervy } );
+		}
 	}
 
-	console.log("Target Count: "  + targets.length );
-	console.log("Target Loc: " + targets[0].x + ", " + targets[0].y);
+	// For x movement, the y split is used to find targets
+	if( playervx !== 0 ){
+		if( marY < (playerW/2) ){
+			// Player is split between Tile(x,y) and Tile(x,y-1)
+			targets.push( {x: px + playervx, y: py + playervy } );
+			targets.push( {x: px + playervx, y: py + playervy - 1} );
+		}
+
+		else if( marY > mapTileSize - (playerW/2) ){
+			// Player is split between Tile(x,y) and Tile(x,y+1)
+			targets.push( {x: px + playervx, y: py + playervy } );
+			targets.push( {x: px + playervx, y: py + playervy + 1} );
+		}else{
+			targets.push( {x: px + playervx, y: py + playervy } );
+		}
+	}
+	
+	// Draw target tiles in the list
+	for( var i = 0; i < targets.length; i++){
+		fillRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Grey" );
+	}
+
+	// Collision checks
+	for( var i = 0; i < targets.length; i++){
+		// If the target tile is 0, restrict movement
+		if( this.getMapTile( targets[i].x, targets[i].y) === 0) {
+			// Get the boundaries of the target tile
+			var minX = targets[i].x * mapTileSize;
+			var maxX = minX + mapTileSize;
+			var minY = targets[i].y * mapTileSize;
+			var maxY = minY + mapTileSize;
+
+			if( playervx > 0 ){
+				if( (playerx + (playerW / 2)) > minX) {
+					playerx = minX - (playerW/2);
+				}
+			}
+			if( playervx < 0 ){
+				if( (playerx - (playerW / 2)) < maxX){
+					playerx = maxX + (playerW/2);
+				}
+			}
+			if( playervy > 0 ){
+				if( (playery + playerW) > minY) {
+					playery = minY - (playerW);
+				}
+			}
+			if( playervy < 0 ){
+				if( (playery) < maxY){
+					playery = maxY;
+				}
+			}
+		}
+	}
 }
 
 PlayState.prototype.onUpdate = function() {
@@ -297,7 +367,7 @@ PlayState.prototype.onUpdate = function() {
 	// We only need to process input, handle gui logic, and render
 	
 	// Since input is handled by a callback, the player needs to process input
-	this.updatePlayer();
+	//this.updatePlayer();
 
 	// Render
 	this.render();
