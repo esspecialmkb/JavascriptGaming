@@ -280,8 +280,114 @@ PlayState.prototype.updatePlayer = function() {
 	if(kRt === true){ playervx = 1;}
 
 	// Move the player
-	playerx += playervx;
 	playery += playervy;
+	playerx += playervx;
+
+	// We will need to keep track of which tiles to check for
+	var targets = [];
+	
+	// Get the 4 corners for box collision
+	var pLeft = playerx - (playerW/2);
+	var pRight = pLeft + playerW;
+	var pTop = playery;
+	var pBottom = pTop + playerW;
+	
+	// What tiles do the four corners reside in?
+	var testXL = Math.floor( pLeft / mapTileSize );
+	var testYT = Math.floor( pTop / mapTileSize );
+	var testXR = Math.floor( pRight / mapTileSize );
+	var testYB = Math.floor( pBottom / mapTileSize );
+	
+	var yDif = ( testYT !== testYB );
+	var xDif = ( testXL !== testXR )
+
+	// Check for tile collision
+	targets.push( {x: testXL, y: testYT} );
+	if( yDif ){
+		targets.push( {x: testXL, y: testYB} );
+	}
+	
+	if( xDif ){
+		targets.push( {x: testXR, y: testYT} );
+		if( yDif ){
+			targets.push( {x: testXR, y: testYB} );
+		}
+	}
+	
+	// Draw target tiles in the list
+	for( var i = 0; i < targets.length; i++){
+		fillRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Grey" );
+	}
+
+	// If both of these conditions are true, we are overlapping
+	//var overlapX = (pLeft < maxX) && (pRight > minX);
+	//var overlapY = (pTop < maxY) && (pBottom > minY);
+}
+
+PlayState.prototype.onUpdate = function() {
+	if(this.firstRun){ 
+		console.log("Updating PlayState");
+		this.firstRun = false;
+	}
+	// We only need to process input, handle gui logic, and render
+	
+	// Since input is handled by a callback, the player needs to process input
+	//this.updatePlayer();
+
+	// Render
+	this.render();
+}
+
+PlayState.prototype.onStop = function() {
+	console.log("Starting PlayState");
+	
+	//	Remove input listeners
+	window.removeEventListener('keydown', this.onKeyDown );
+	window.removeEventListener('keyup', this.onKeyUp );
+	
+	window.removeEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
+	window.removeEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
+	window.removeEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
+	window.removeEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
+	
+	window.removeEventListener('touchstart', this.onTouchStart, false);
+	window.removeEventListener('touchmove', this.onTouchMove, false);
+	window.removeEventListener('touchend', this.onTouchEnd, false);
+}
+
+
+// Old code for player movement and collision - Archive
+/*
+PlayState.prototype.updatePlayer = function() {
+	// Reset vectors
+	playervy = 0;
+	playervx = 0;
+
+	// What tile is the player standing on?
+	var psx = playerx;
+	var psy = playery + (playerW/2);
+	var px = Math.floor(playerx / mapTileSize);
+	var py = Math.floor((playery + (playerW/2))/ mapTileSize);
+
+	// ... And how far from the edge of the tile are they?
+	//	playerW = 15
+	//	playerH = 30
+	//	40-15 = 25 -> 25/2 = 12.5 -> Margin X
+	//	40-30 = 10 -> 10/2 = 5    -> Margin Y
+	var marX = psx % mapTileSize; 
+	var marY = psy % mapTileSize;
+
+	textOutput = "Tile Margin: " + marX + ", " + marY;
+
+	// Set move vectors according to input masks
+	if(kUp === true){ playervy = -1;}
+	if(kDn === true){ playervy = 1;}
+	if(kLt === true){ playervx = -1;}
+	if(kRt === true){ playervx = 1;}
+
+	// Move the player
+	playery += playervy;
+	playerx += playervx;
 
 	// We will need to keep track of which tiles to check for
 	var targets = [];
@@ -302,7 +408,7 @@ PlayState.prototype.updatePlayer = function() {
 			targets.push( {x: px + playervx, y: py + playervy } );
 		}
 	}
-
+	
 	// For x movement, the y split is used to find targets
 	if( playervx !== 0 ){
 		if( marY < (playerW/2) ){
@@ -355,37 +461,9 @@ PlayState.prototype.updatePlayer = function() {
 					playery = maxY;
 				}
 			}
+
 		}
 	}
 }
 
-PlayState.prototype.onUpdate = function() {
-	if(this.firstRun){ 
-		console.log("Updating PlayState");
-		this.firstRun = false;
-	}
-	// We only need to process input, handle gui logic, and render
-	
-	// Since input is handled by a callback, the player needs to process input
-	//this.updatePlayer();
-
-	// Render
-	this.render();
-}
-
-PlayState.prototype.onStop = function() {
-	console.log("Starting PlayState");
-	
-	//	Remove input listeners
-	window.removeEventListener('keydown', this.onKeyDown );
-	window.removeEventListener('keyup', this.onKeyUp );
-	
-	window.removeEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
-	window.removeEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
-	window.removeEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
-	window.removeEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
-	
-	window.removeEventListener('touchstart', this.onTouchStart, false);
-	window.removeEventListener('touchmove', this.onTouchMove, false);
-	window.removeEventListener('touchend', this.onTouchEnd, false);
-}
+*/
