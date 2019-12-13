@@ -20,3 +20,6 @@ The tilemap example now works with viewport scrolling, currently experimenting w
 
     Various Resources
     https://js13kgames.github.io/resources/
+
+    Javascript design patterns:
+    https://www.toptal.com/javascript/comprehensive-guide-javascript-design-patterns
