@@ -23,3 +23,7 @@ The tilemap example now works with viewport scrolling, currently experimenting w
 
     Javascript design patterns:
     https://www.toptal.com/javascript/comprehensive-guide-javascript-design-patterns
+
+    Misc.
+    https://en.wikipedia.org/wiki/Kuwahara_filter
+    https://www.gamasutra.com/blogs/AlvaroSalvagno/20191213/355660/Inspiration_is_an_excuse__practical_tools_for_game_designers.php
