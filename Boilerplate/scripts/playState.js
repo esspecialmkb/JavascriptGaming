@@ -32,14 +32,14 @@ function PlayState(callback){
 	this.firstRun = true;
 	this.screenWidth = 0;
 	this.screenHeight = 0;
-	
+
 	//	Map Data (Not used)
 	this.map = null;
 
 	//	Player Data
 	this.playerW = 22;
 	this.playerH = 45;
-	
+
 	//	Player Input Mask
 	this.keyUp = 38;
 	this.keyDn = 40;
@@ -116,7 +116,7 @@ PlayState.prototype.onMouseMove = function( e) {
 //	Touch input handlers
 PlayState.prototype.onTouchStart = function( e ) {
 	var t = e.changedTouches;
-	
+
 	switch(t.length){
 		case 1:
 			//Process single touch
@@ -125,13 +125,13 @@ PlayState.prototype.onTouchStart = function( e ) {
 			//Process double touch
 			break;
 		default:
-			
+
 	}
 }
 
 PlayState.prototype.onTouchMove = function( e ) {
 	var t = e.changedTouches;
-	
+
 	switch(t.length){
 		case 1:
 			//Process single touch
@@ -140,13 +140,13 @@ PlayState.prototype.onTouchMove = function( e ) {
 			//Process double touch
 			break;
 		default:
-			
+
 	}
 }
 
 PlayState.prototype.onTouchEnd = function( e ) {
 	var t = e.changedTouches;
-	
+
 	switch(t.length){
 		case 1:
 			//Process single touch
@@ -155,7 +155,7 @@ PlayState.prototype.onTouchEnd = function( e ) {
 			//Process double touch
 			break;
 		default:
-			
+
 	}
 }
 
@@ -167,16 +167,16 @@ PlayState.prototype.getMapTile = function( x, y ){
 //	State initializer
 PlayState.prototype.onStart = function() {
 	console.log("Starting PlayState");
-	
+
 	this.screenWidth = canvasWidth();
 	this.screenHeight = canvasHeight();
-	
+
 	// The map needs to be created ===============================================================================
 	//var mapTiles = [];
 	//var mapTileSize = 40;
 	//var mapWidth = 10;
 	//var mapHeight = 10;
-	
+
 	for( var tY = 0; tY < mapHeight; tY++ ){
 		for( var tX = 0; tX < mapWidth; tX++){
 			// Push map tiles to the array
@@ -199,16 +199,16 @@ PlayState.prototype.onStart = function() {
 	playerH = Math.floor((mapTileSize /8 ) * 6);
 	playerxMargin = (mapTileSize - this.playerW) / 2;
 	playeryMargin = (mapTileSize - this.playerH) / 2;
-	
+
 	//	Register input listeners ==============================================================================
 	window.addEventListener('keydown', this.onKeyDown );
 	window.addEventListener('keyup', this.onKeyUp );
-	
+
 	window.addEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
 	window.addEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
 	window.addEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
 	window.addEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
-	
+
 	//window.addEventListener('touchstart', this.onTouchStart, false);
 	//window.addEventListener('touchmove', this.onTouchMove, false);
 	//window.addEventListener('touchend', this.onTouchEnd, false);
@@ -239,12 +239,13 @@ PlayState.prototype.drawPlayer = function() {
 	fillRectStyle( renderOffsetX + playerx - (playerW/2), renderOffsetY + playery, playerW, playerW, "Blue" );
 }
 
+// Main render method
 PlayState.prototype.render = function() {
 	clearCanvasStyle("black");
-	
+
 	this.drawMap();
-	
-	this.updatePlayer();			
+
+	this.updatePlayer();
 	this.drawPlayer();
 
 	if(textOutput !== null){
@@ -268,10 +269,10 @@ PlayState.prototype.updatePlayer = function() {
 	//	playerH = 30
 	//	40-15 = 25 -> 25/2 = 12.5 -> Margin X
 	//	40-30 = 10 -> 10/2 = 5    -> Margin Y
-	var marX = psx % mapTileSize; 
+	var marX = psx % mapTileSize;
 	var marY = psy % mapTileSize;
 
-	textOutput = "Tile Margin: " + marX + ", " + marY;
+	//textOutput = "Tile Margin: " + marX + ", " + marY;
 
 	// Set move vectors according to input masks
 	if(kUp === true){ playervy = -1;}
@@ -285,19 +286,19 @@ PlayState.prototype.updatePlayer = function() {
 
 	// We will need to keep track of which tiles to check for
 	var targets = [];
-	
+
 	// Get the 4 corners for box collision
 	var pLeft = playerx - (playerW/2);
 	var pRight = pLeft + playerW;
 	var pTop = playery;
 	var pBottom = pTop + playerW;
-	
+
 	// What tiles do the four corners reside in?
 	var testXL = Math.floor( pLeft / mapTileSize );
 	var testYT = Math.floor( pTop / mapTileSize );
 	var testXR = Math.floor( pRight / mapTileSize );
 	var testYB = Math.floor( pBottom / mapTileSize );
-	
+
 	var yDif = ( testYT !== testYB );
 	var xDif = ( testXL !== testXR )
 
@@ -306,31 +307,56 @@ PlayState.prototype.updatePlayer = function() {
 	if( yDif ){
 		targets.push( {x: testXL, y: testYB} );
 	}
-	
+
 	if( xDif ){
 		targets.push( {x: testXR, y: testYT} );
 		if( yDif ){
 			targets.push( {x: testXR, y: testYB} );
 		}
 	}
-	
-	// Draw target tiles in the list
+	textOutput = "Player X: " + playerx + ", Player Y: " +playery + "\n";
+	// Draw/iterate the target tiles in the list
 	for( var i = 0; i < targets.length; i++){
-		fillRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Grey" );
-	}
 
+		//---DEBUG DRAWING CALLS---
+		//fillRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Grey" );
+		if((this.getMapTile(targets[i].x,targets[i].y) === 0) && isOverlapping(pLeft, pTop, playerW, playerW, targets[i].x * mapTileSize, targets[i].y * mapTileSize, mapTileSize, mapTileSize)){
+			strokeRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Red" );
+			var xColLeft = pLeft - (targets[i].x * mapTileSize) + mapTileSize;
+			var xColRight = (targets[i].x * mapTileSize) - pRight;
+
+			var yColTop = pTop - (targets[i].y * mapTileSize) + mapTileSize;
+			var yColBottom = (targets[i].y * mapTileSize) - pBottom;
+
+			textOutput += "xColLeft: " + xColLeft +
+			 "xColRight: " + xColRight +
+			 "yColTop: " + yColTop +
+			"yColBottom: " + yColBottom + "\n";
+		}
+	}
+	var marX = psx % mapTileSize;
+	var marY = psy % mapTileSize;
+
+	//textOutput += "\n" + "Tile Margin: " + marX + ", " + marY;
+}
+
+var isOverlapping = function(aX, aY, aW, aH, bX, bY, bW, bH){
 	// If both of these conditions are true, we are overlapping
 	//var overlapX = (pLeft < maxX) && (pRight > minX);
 	//var overlapY = (pTop < maxY) && (pBottom > minY);
+	var overlapX = (aX < (bX + bW)) && ((aX + aW) > bX);
+	var overlapY = (aY < (bY + bH)) && ((aY + aH) > bY);
+
+	return overlapX && overlapY;
 }
 
 PlayState.prototype.onUpdate = function() {
-	if(this.firstRun){ 
+	if(this.firstRun){
 		console.log("Updating PlayState");
 		this.firstRun = false;
 	}
 	// We only need to process input, handle gui logic, and render
-	
+
 	// Since input is handled by a callback, the player needs to process input
 	//this.updatePlayer();
 
@@ -340,16 +366,16 @@ PlayState.prototype.onUpdate = function() {
 
 PlayState.prototype.onStop = function() {
 	console.log("Starting PlayState");
-	
+
 	//	Remove input listeners
 	window.removeEventListener('keydown', this.onKeyDown );
 	window.removeEventListener('keyup', this.onKeyUp );
-	
+
 	window.removeEventListener('click', this.onMouseClick);	//The event occurs when the user clicks on an element
 	window.removeEventListener('mousedown', this.onMouseDown, false);	//The event occurs when the user presses a mouse button over an element
 	window.removeEventListener('mouseup', this.onMouseUp, false);	//The event occurs when a user releases a mouse button over an element
 	window.removeEventListener('mousemove', this.onMouseMove, false);	//The event occurs when the pointer is moving while it is over an element
-	
+
 	window.removeEventListener('touchstart', this.onTouchStart, false);
 	window.removeEventListener('touchmove', this.onTouchMove, false);
 	window.removeEventListener('touchend', this.onTouchEnd, false);
@@ -374,7 +400,7 @@ PlayState.prototype.updatePlayer = function() {
 	//	playerH = 30
 	//	40-15 = 25 -> 25/2 = 12.5 -> Margin X
 	//	40-30 = 10 -> 10/2 = 5    -> Margin Y
-	var marX = psx % mapTileSize; 
+	var marX = psx % mapTileSize;
 	var marY = psy % mapTileSize;
 
 	textOutput = "Tile Margin: " + marX + ", " + marY;
@@ -391,7 +417,7 @@ PlayState.prototype.updatePlayer = function() {
 
 	// We will need to keep track of which tiles to check for
 	var targets = [];
-	
+
 	// For y movement, the x split is used to find targets
 	if( playervy !== 0 ){
 		if( marX < (playerW/2) ){
@@ -408,7 +434,7 @@ PlayState.prototype.updatePlayer = function() {
 			targets.push( {x: px + playervx, y: py + playervy } );
 		}
 	}
-	
+
 	// For x movement, the y split is used to find targets
 	if( playervx !== 0 ){
 		if( marY < (playerW/2) ){
@@ -425,7 +451,7 @@ PlayState.prototype.updatePlayer = function() {
 			targets.push( {x: px + playervx, y: py + playervy } );
 		}
 	}
-	
+
 	// Draw target tiles in the list
 	for( var i = 0; i < targets.length; i++){
 		fillRectStyle( renderOffsetX + targets[i].x * mapTileSize, renderOffsetY + targets[i].y * mapTileSize, mapTileSize, mapTileSize, "Grey" );
